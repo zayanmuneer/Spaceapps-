@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PyroScale-AI: Harmonized Burning Activity Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{--bg:#eef0f3;--sf:#fff;--ink:#16202c;--mut:#5a6676;--ln:#d5dae1;--ac:#1f5f8b;--hd:#0f1d2e;--land:#dde1e7;--hat:#e8ebef;--bar:#c9ced6;color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151c;--sf:#171e27;--ink:#e4e8ee;--mut:#9aa5b3;--ln:#2b3541;--ac:#7db4dd;--hd:#0a111b;--land:#27303b;--hat:#202833;--bar:#3a4553;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10151c;--sf:#171e27;--ink:#e4e8ee;--mut:#9aa5b3;--ln:#2b3541;--ac:#7db4dd;--hd:#0a111b;--land:#27303b;--hat:#202833;--bar:#3a4553;color-scheme:dark}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+header{background:var(--hd);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:19px;font-weight:700}
+header p{margin:0;font-size:13px;color:#aebbcc}
+.tag{font-size:12px;color:#aebbcc;border:1px solid #3a4c66;padding:3px 9px;border-radius:2px}
+.wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;padding:20px 24px;max-width:1520px;margin:auto}
+@media(max-width:980px){.wrap{grid-template-columns:1fr;padding:12px}}
+.pn{background:var(--sf);border:1px solid var(--ln);border-radius:2px;padding:14px 16px;margin-bottom:20px}
+h2{margin:0 0 10px;font-size:15px;font-weight:600}
+label,small{display:block;font-size:12.5px;color:var(--mut);margin-bottom:3px}
+select,input,button{font:inherit;color:var(--ink);background:var(--sf);border:1px solid var(--ln);border-radius:2px;padding:6px 8px;width:100%}
+button{cursor:pointer;width:auto;padding:7px 14px}
+button.p{background:var(--ac);border-color:var(--ac);color:var(--sf);font-weight:600}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.seg{display:flex;border:1px solid var(--ln);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.seg label{flex:1;margin:0;text-align:center;padding:6px 4px;cursor:pointer;color:var(--ink);position:relative}
+.seg label+label{border-left:1px solid var(--ln)}
+.seg input{position:absolute;opacity:0;width:0;padding:0;border:0}
+.seg label:has(input:checked){background:var(--ac);color:var(--sf);font-weight:600}
+.seg label:has(:focus-visible){outline:2px solid var(--ac);outline-offset:-3px}
+canvas{width:100%;aspect-ratio:360/140;display:block;border:1px solid var(--ln);cursor:crosshair;touch-action:none}
+.hint{font-size:12.5px;color:var(--mut);margin:6px 0 0}
+.kp{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--ink);border-bottom:1px solid var(--ln);margin-bottom:20px;background:var(--sf)}
+.kp div{padding:12px 16px}.kp div+div{border-left:1px solid var(--ln)}
+.kp b{display:block;font-size:24px;font-weight:600;line-height:1.2}.kp span{font-size:12.5px;color:var(--mut)}
+@media(max-width:720px){.kp{grid-template-columns:1fr 1fr}.kp div:nth-child(3){border-left:0}.kp div:nth-child(n+3){border-top:1px solid var(--ln)}}
+.hero svg{width:100%;display:block}
+.ch{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:720px){.ch{grid-template-columns:1fr}}
+svg text{fill:var(--mut);font:10px "Public Sans",sans-serif}
+.lg{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mut);margin-top:8px;flex-wrap:wrap}
+.lg i{width:220px;max-width:50%;height:10px;border-radius:1px;display:block}
+.note{font-size:12.5px;color:var(--mut);margin:0 0 8px}
+ul{margin:0;padding:0;list-style:none}
+li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--ln)}
+li b{font-weight:600}
+summary{cursor:pointer;font-weight:600}
+details p{margin:8px 0 0;max-width:75ch}
+#tip{position:fixed;pointer-events:none;background:var(--hd);color:#fff;font-size:12.5px;padding:6px 9px;border-radius:2px;display:none;z-index:9}
+dialog{border:1px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:2px;width:min(640px,94vw);padding:16px}
+dialog::backdrop{background:rgba(10,17,27,.55)}
+textarea{width:100%;height:240px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;background:var(--bg);color:var(--ink);border:1px solid var(--ln);padding:8px;margin:10px 0}
+.row{display:flex;gap:10px;justify-content:flex-end}
+[hidden]{display:none!important}
+.ck{display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px;margin:0 0 8px}.ck input{width:auto}
+.gl{padding:0;position:relative;overflow:hidden;background:#050b14}
+#gl{height:clamp(340px,50vh,520px)}#gl canvas{display:block;width:100%;height:100%;aspect-ratio:auto;border:0;touch-action:none}
+.ov{position:absolute;left:10px;background:rgba(8,16,28,.8);border:1px solid #2a3a52;border-radius:2px;padding:6px 10px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;--sf:#0f1b2b;--ink:#e4e8ee;--ln:#33445c;--ac:#7db4dd;--mut:#9fb0c4;color:#e4e8ee;font-size:12.5px;max-width:calc(100% - 20px)}
+.ov.top{top:10px}.ov.bot{bottom:10px}.ov i{width:140px;height:8px;display:block}
+.ovs{position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;max-width:calc(100% - 20px)}.ovs .ov{position:static}
+.ov.info{left:auto;right:10px;top:10px;bottom:auto;width:290px;flex-direction:column;align-items:stretch;gap:8px;max-height:calc(100% - 70px);overflow:auto}
+@media(max-width:720px){.ov.info{left:10px;right:10px;width:auto;top:auto;bottom:56px;max-height:46%}}
+.warn{border-left:4px solid #c2410c}.rks{margin:0 0 8px;font-weight:600}.rctl{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap;margin:0 0 10px}.rctl select{width:auto}.rctl .ck{margin:0 0 6px}
+li button{padding:3px 10px;width:auto}li small{color:var(--mut)}
+:root{--hh:52px}body{overflow:hidden}
+header{position:fixed;top:0;left:0;right:0;z-index:6;height:var(--hh);padding:0 18px;flex-wrap:nowrap;align-items:center;background:rgba(9,16,27,.78);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08)}
+header p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}.hr{display:flex;gap:10px;align-items:center}
+header button{width:auto;background:transparent;color:#dbe4ef;border:1px solid #3a4c66;padding:4px 10px}
+@media(max-width:720px){header p{display:none}}
+.gl{position:fixed;inset:0;z-index:0;margin:0;border:0;border-radius:0}#gl{position:absolute;inset:0;height:100%}
+.ovs{top:calc(var(--hh) + 10px)}.ov.bot{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+#yrl{left:10px;bottom:64px;flex-direction:column;align-items:flex-start;gap:2px}
+#dr{position:fixed;top:var(--hh);right:0;bottom:0;width:min(500px,100vw);z-index:4;display:flex;flex-direction:column;background:var(--bg);background:color-mix(in srgb,var(--bg) 93%,transparent);backdrop-filter:blur(16px);border-left:1px solid var(--ln);transition:transform .28s ease}
+body.dc #dr{transform:translateX(105%)}
+#tabs{display:flex;border-bottom:1px solid var(--ln);flex:none}
+#tabs button{flex:1;width:auto;border:0;border-radius:0;background:none;padding:12px 4px;font-weight:600;color:var(--mut)}
+#tabs button.on{color:var(--ink);box-shadow:inset 0 -2px var(--ac)}
+.tp{flex:1;overflow:auto;padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+.wrap{display:block;padding:0;max-width:none;margin:0}
+#dr .ch{grid-template-columns:1fr}#dr .kp{grid-template-columns:1fr 1fr}#dr .kp div:nth-child(3){border-left:0}#dr .kp div:nth-child(n+3){border-top:1px solid var(--ln)}
+@media(max-width:720px){#dr{top:auto;height:58vh;width:100%;border-left:0;border-top:1px solid var(--ln)}body.dc #dr{transform:translateY(105%)}}
+.seg label:has(input:disabled){opacity:.45;cursor:not-allowed}
+table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{padding:4px 6px;border-top:1px solid var(--ln);text-align:right}th:first-child,td:first-child{text-align:left}th{font-weight:600;color:var(--mut)}
+.sc{overflow:auto}.lv{margin-bottom:10px}.lv label{display:flex;justify-content:space-between;margin:0 0 2px}.lv input{padding:0}
+.chat{max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.m{padding:8px 10px;border-radius:2px;white-space:pre-wrap;font-size:13.5px;max-width:95%}.m.u{background:var(--ac);color:var(--sf);align-self:flex-end}.m.a{background:var(--hat)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.chips button{padding:4px 9px;font-size:12.5px;text-align:left}
+#aiq{height:72px;font:14px/1.4 "Public Sans",system-ui,sans-serif;background:var(--sf);margin:0 0 8px}
+.lg2{margin-bottom:8px}.lg2>b{display:block;font-size:12.5px;color:var(--mut);margin-bottom:4px}
+.pres{list-style:none;margin:0;padding:0;max-height:240px;overflow:auto;border:1px solid var(--ln);border-top:0}.pres:empty{display:none}
+.pres li{padding:7px 10px;cursor:pointer;border-top:1px solid var(--ln)}.pres li:first-child{border-top:0}.pres li:hover{background:var(--hat)}.pres small{color:var(--mut)}
+.chips .chip{padding:4px 10px;border-radius:12px;background:var(--hat);border-color:var(--ln)}
+.ovs{width:max-content}input[type=range]{accent-color:var(--ac)}.ov .seg label,.ov button{white-space:nowrap}.ov .seg label{padding:6px 10px}
+@media(min-width:721px){body:not(.dc) .ovs{max-width:calc(100vw - 520px)}}
+h1{white-space:nowrap}.tag{white-space:nowrap;max-width:38vw;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:720px){.ov{padding:4px 6px;gap:8px;font-size:12px}.ov .seg label{padding:5px 8px}h1{font-size:17px}}
+</style></head><body>
+<div class="pn gl"><div id="gl" role="img" aria-label="Interactive 3D globe of hotspot activity"></div>
+<div class="ovs"><div class="ov top"><div class="seg" style="margin:0"><label><input type="radio" name="gm" value="r" checked>Rotate</label><label><input type="radio" name="gm" value="d">Draw area</label></div><label class="ck" style="margin:0"><input type="checkbox" id="ga" checked>Auto-rotate</label><label class="ck" style="margin:0"><input type="checkbox" id="gn" checked>Day and night</label><button id="gr">Reset view</button></div><div class="ov"><div class="seg" style="margin:0"><label><input type="radio" name="vm" value="o" checked>Observed</label><label><input type="radio" name="vm" value="f">Forecast</label><label><input type="radio" name="vm" value="r">Risk</label><label><input type="radio" name="vm" value="x" id="vmx">Future</label></div><div class="seg" id="fxl" hidden style="margin:0"><label><input type="radio" name="fx" value="s" checked>Scenario</label><label><input type="radio" name="fx" value="b">Baseline</label><label><input type="radio" name="fx" value="c">Change</label></div><label id="fkl" hidden style="margin:0;display:flex;gap:8px;align-items:center;color:var(--ink)">Months ahead<input id="fk" type="range" min="1" max="24" value="1" style="width:120px;padding:0"><span id="fkv"></span></label></div><div class="ov" id="fcl" hidden></div></div>
+<div class="ov bot" id="lgd"><span>Mean hotspots per cell per month</span><i style="background:linear-gradient(90deg,#fcfdbf,#fed395,#fc9f6e,#f1605d,#c43c75,#8c2981,#51127c,#1b0c41)"></i><span>low to high; column height follows the same scale</span></div><div class="ov" id="yrl" hidden></div></div>
+<header><div><h1>PyroScale-AI</h1><p>Harmonized burning activity calendar from MODIS and VIIRS active fire hotspots, 2001 to present</p></div><div class="hr"><span class="tag" id="tf">Forecast: statistical baseline</span><span class="tag" id="tg">Demonstration data</span><button id="dt">Hide panel</button></div></header>
+<div id="dr"><nav id="tabs"><button data-t="x" class="on">Explore</button><button data-t="c">Places</button><button data-t="p">Point</button><button data-t="d">Data Lab</button><button data-t="f">Future</button></nav><div class="tp" data-t="x"><div class="wrap">
+<aside>
+<div class="pn"><h2>Area of interest</h2>
+<label for="pre">Region</label><select id="pre"></select>
+<div class="g2">
+<div><label for="n">North latitude</label><input id="n" type="number" step="0.5"></div>
+<div><label for="s">South latitude</label><input id="s" type="number" step="0.5"></div>
+<div><label for="w">West longitude</label><input id="w" type="number" step="0.5"></div>
+<div><label for="e">East longitude</label><input id="e" type="number" step="0.5"></div></div>
+<p class="hint">On the globe, switch to Draw area and drag, or click once for a small box. You can also pick a region or type coordinates.</p></div>
+<div class="pn"><h2>Period and view</h2>
+<div class="g2"><div><label for="f">From</label><input id="f" type="month" value="2001-01" min="2001-01" max="2026-10"></div>
+<div><label for="t">To</label><input id="t" type="month" value="2026-10" min="2001-01" max="2026-10"></div></div>
+<label for="cy">Compare year in seasonal chart</label><select id="cy" style="margin-bottom:10px"></select>
+<small>Hotspot record</small>
+<div class="seg"><label><input type="radio" name="dm" value="h" checked>Harmonized</label><label><input type="radio" name="dm" value="r">Raw sensor</label></div>
+<small>Calendar shows</small>
+<div class="seg"><label><input type="radio" name="cm" value="c" checked>Hotspot count</label><label><input type="radio" name="cm" value="a">Anomaly</label></div>
+<label for="ld">Load your JSON files: the data file, the forecast file, or both together</label><input id="ld" type="file" accept=".json,application/json" multiple style="margin-bottom:10px"><button class="p" id="ex">Export data</button></div>
+<div class="pn"><h2>Context layers</h2>
+<label class="ck"><input type="checkbox" id="lw">Weather and drought (ERA5)</label>
+<label class="ck"><input type="checkbox" id="lx">Wind and air quality now</label>
+<p class="hint">Off by default and fetched only when switched on. They call Open-Meteo, so they need a self-hosted copy of the page.</p></div>
+</aside>
+<main>
+
+<div class="pn warn"><h2>High fire risk warning</h2><p class="rks" id="rks">Loading forecast...</p>
+<div class="rctl"><label for="rs">Sensitivity<select id="rs"><option value="c">Cautious, 80th percentile</option><option value="s" selected>Standard, 90th percentile</option><option value="t">Strict, 95th percentile</option></select></label><label class="ck"><input type="checkbox" id="rkm">Only my selected area</label></div>
+<ul id="rkl"></ul>
+<p class="note" style="margin:8px 0 0">Risk compares this month\u2019s forecast with each cell\u2019s own history for the same month, and ignores cells with fewer than 20 expected hotspots. It is a statistical activity warning, not a fire danger rating, and it does not include live weather. Switch on the weather layer for drought context.</p></div>
+<div class="kp" id="kp"></div>
+<div class="pn hero"><h2 id="ct">Burning activity calendar</h2><p class="note" id="cn"></p><div id="cal"></div><div class="lg" id="lg"></div></div>
+<div class="pn"><h2>Outlook for the selected area</h2><p class="note" id="on"></p><div id="oc"></div><p class="note" id="ok" style="margin:8px 0 0"></p></div>
+<div class="ch">
+<div class="pn"><h2>Seasonal profile</h2><p class="note" id="sn"></p><div id="sc"></div></div>
+<div class="pn"><h2>Annual totals by record</h2><p class="note">Raw counts step up when VIIRS replaces MODIS in 2012. Harmonized counts do not.</p><div id="an"></div></div></div>
+<div class="pn"><h2>Anomaly alerts</h2><p class="note">Months in the last 12 of the selected period that exceed 150% of the full-record median.</p><ul id="al" aria-live="polite"></ul></div>
+<div class="pn" id="wx" hidden><h2>Weather and drought context</h2><p class="note" id="wn"></p><div id="wc"></div><p class="note" id="wk" style="margin:8px 0 0"></p></div>
+<div class="pn" id="wd" hidden><h2>Wind and air quality</h2><p id="wdt" style="margin:0">Loading...</p></div>
+<details class="pn"><summary>Method and data notes</summary>
+<p>MODIS (1 km) and VIIRS (375 m) detections from NASA FIRMS are gridded to monthly counts. The harmonization stage standardizes Fire Radiative Power, corrects scan-angle distortion and diurnal overpass differences, and back-casts VIIRS-equivalent counts for 2001 to 2011, so the sensor of origin no longer drives the signal.</p>
+<p>The baseline is the median of each calendar month across the full record. Anomaly is the percentage difference from that median. Color ramps are colorblind-safe: a light-to-dark sequential ramp for counts and blue-to-orange for anomalies.</p>
+<p>Until real data loads, the page shows a synthetic dataset for demonstration. Hosted with pyroscale_data.json beside it, the page loads that file every time it opens, so the data stays as current as the last run of update_pyroscale_data.py. The loader in the Period and view panel is a manual alternative.</p></details>
+</main></div></div>
+<div class="tp" data-t="c" hidden>
+<div class="pn"><h2>Countries and cities</h2>
+<p class="note">Pick any countries and cities, as many as you like. The globe, calendar, risk warning, Data Lab and Future tab then show only those places.</p>
+<input id="pq" type="search" placeholder="Search any country or city" autocomplete="off" aria-label="Search countries and cities">
+<ul id="pr" class="pres"></ul>
+<div class="chips" id="pch" style="margin-top:10px"></div>
+<div class="g2"><div><label for="prr">A city includes cells within</label><select id="prr"><option value="0">the cell containing it</option><option value="100">100 km</option><option value="250" selected>250 km</option><option value="500">500 km</option></select></div><div><label>&nbsp;</label><button id="pcl">Clear selection</button></div></div>
+<p class="note" id="pnt"></p>
+<label for="pfl">City list file, from add_places.py (pyroscale_places.json)</label><input id="pfl" type="file" accept=".json,application/json"><p class="note" id="pfm" style="margin:6px 0 0"></p></div>
+<div id="pcards"></div>
+</div>
+<div class="tp" data-t="p" hidden><div class="pn" id="ci"><p class="note" style="margin:0">Click a column on the globe to analyze that point here.</p></div></div>
+<div class="tp" data-t="d" hidden>
+<div class="pn"><h2>Datasets</h2><p class="note">Tick as many datasets as you like. They are compared across the grid cells in your scope.</p>
+<div class="rctl"><button id="dla">Select all</button><button id="dln">Clear</button><label class="ck"><input type="checkbox" id="dlw">Whole world, not just my area</label></div>
+<div id="dll"></div>
+<label for="dlf" style="margin-top:10px">Add your own datasets: CSV files with lat, lon and numeric columns</label><input id="dlf" type="file" accept=".csv,text/csv" multiple><p class="note" id="dlm" style="margin:6px 0 0"></p></div>
+<div class="pn"><h2>Analysis</h2><div id="dls"></div><div id="dlc"></div>
+<h2 style="margin-top:14px">Compare two datasets</h2><div class="g2"><div><label for="dx1">X axis</label><select id="dx1"></select></div><div><label for="dy1">Y axis</label><select id="dy1"></select></div></div><div id="dsc"></div>
+<h2 style="margin-top:14px">Top cells</h2><label for="dtp">Ranked by</label><select id="dtp"></select><ul id="dtl"></ul></div>
+<div class="pn"><h2>Ask the analyst</h2><p class="note" id="aim">Checking whether Claude is available...</p><div class="chat" id="aic"></div><div class="chips" id="aip"></div><textarea id="aiq" placeholder="Ask about the selected datasets, an area, risk, or a what-if scenario" aria-label="Question for the analyst"></textarea><div class="row"><button id="aix" hidden>Stop</button><button class="p" id="ais">Ask</button></div></div>
+</div>
+<div class="tp" data-t="f" hidden>
+<div class="pn"><h2>Scenario lab</h2>
+<p class="note">Move the levers, then run the scenario to see the Earth in that future. The starting point is the machine-learning forecast for the next 24 months, then each cell’s recent level and trend. The levers are an illustrative sensitivity model with assumptions you can edit, not a forecast.</p>
+<div class="lv"><label for="l1">Warming by the chosen year <b id="v1">+0 °C</b></label><input type="range" id="l1" min="0" max="4" step="0.5" value="0"></div>
+<div class="lv"><label for="l2">Rainfall change <b id="v2">0%</b></label><input type="range" id="l2" min="-30" max="30" step="5" value="0"></div>
+<div class="lv"><label for="l3">Human burning and ignitions <b id="v3">0%</b></label><input type="range" id="l3" min="-80" max="50" step="5" value="0"></div>
+<div class="lv"><label for="l4">Fuel management and suppression <b id="v4">0%</b></label><input type="range" id="l4" min="0" max="50" step="5" value="0"></div>
+<div class="lv"><label for="l5">Year <b id="v5">2040</b></label><input type="range" id="l5" min="2027" max="2060" step="1" value="2040"></div>
+<label class="ck"><input type="checkbox" id="lsw">Apply to the whole world, not just my selected area</label>
+<details><summary>Assumptions</summary><div class="g2"><div><label for="a1">Change in fire activity per +1 °C (%)</label><input id="a1" type="number" value="15" step="1"></div><div><label for="a2">Change per 10% less rainfall (%)</label><input id="a2" type="number" value="8" step="1"></div></div><p class="note">These are placeholders for illustration, not measured values. Replace them with figures from studies you trust. Where the ML forecast has no edge over the seasonal pattern, the current path falls back to each cell’s last five full years, extended by its own 10-year trend.</p></details>
+<div class="row" style="justify-content:flex-start;margin-top:10px"><button class="p" id="sr">Run scenario</button><button id="sx">Reset</button></div>
+<p class="note" style="margin:8px 0 0">With no lever moved, it shows the current path: the ML-informed baseline. Move a lever to see what a change would do.</p></div>
+<div class="pn" id="so" hidden><h2>Result</h2><p id="sot"></p><div id="soc"></div>
+<label for="sy">Move through time <b id="syl"></b></label><div class="row" style="justify-content:flex-start;align-items:center"><button id="sp">Play</button><input type="range" id="sy" min="0" max="100" value="100"></div>
+<h2 style="margin-top:12px">Biggest changes</h2><ul id="sol"></ul></div>
+</div></div>
+<div id="tip"></div>
+<dialog id="dx"><h2>Export</h2><label for="fx">Format</label>
+<select id="fx"><option value="m">Monthly series (CSV)</option><option value="g">Hotspot grid (CSV)</option><option value="j">Hotspot grid (GeoJSON)</option></select>
+<textarea id="ta" readonly aria-label="Export preview"></textarea>
+<div class="row"><button id="cp">Copy</button><button id="dl">Download</button><button class="p" id="cl">Close</button></div></dialog>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const $=id=>document.getElementById(id),MN="Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
+const Y0=2001,Y1=2026,NY=Y1-Y0+1,MOD=132;let LAST=(Y1-Y0)*12+9;
+const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e4?Math.round(n/1e3)+"k":n>=1e3?(n/1e3).toFixed(1)+"k":Math.round(n)+"";
+const hex=s=>[1,3,5].map(i=>parseInt(s.substr(i,2),16));
+const RC=["#fcfdbf","#fed395","#fc9f6e","#f1605d","#c43c75","#8c2981","#51127c","#1b0c41"],DV=["#2c7bb6","#abd9e9","#f7f7f7","#fdae61","#c2410c"];
+function ramp(c,t){t=Math.max(0,Math.min(1,t));const k=t*(c.length-1),i=Math.min(c.length-2,k|0),f=k-i,a=hex(c[i]),b=hex(c[i+1]);return"rgb("+a.map((x,j)=>Math.round(x+(b[j]-x)*f))+")"}
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const hh=i=>{const x=Math.sin(i*12.9898)*43758.5453;return x-Math.floor(x)};
+const RG=[[-58,-10,14,8,9,420,.01,{2005:1.8,2007:1.5,2010:1.9,2019:1.5,2024:2}],[-47,-15,6,7,8,380,.01,{2010:1.4,2017:1.4,2020:1.5}],[-62,-28,8,8,9,160,.01,{2008:1.7,2020:1.8,2022:1.6}],[18,9,28,6,1,520,-.012,{}],[24,-13,14,6,8,470,-.012,{}],[132,-15,14,5,10,260,.005,{2019:1.4}],[148,-34,7,5,1,60,.005,{2003:2.5,2009:3,2013:2,2020:6}],[110,58,25,6,7,200,.015,{2003:2,2012:1.8,2019:2.2,2021:2.5}],[-120,40,8,8,8,90,.02,{2018:2,2020:2.6,2021:2.2}],[15,40,20,4,7,45,0,{2007:2,2017:2.1,2021:2.3,2023:2}],[102,18,8,6,3,300,.005,{2007:1.4,2010:1.3,2016:1.5,2019:1.4}],[76,28,6,3,10.5,150,.01,{}],[-105,57,22,5,7,130,.02,{2014:2.2,2016:2,2021:1.7,2023:5}],[112,-3,12,4,9,200,0,{2006:3,2009:1.8,2015:4,2019:2.2,2023:2.6}]];
+const cm=new Map(),rn=rng(7),CCR=["BR","BR","AR",null,null,"AU","AU","RU","US",null,"TH","IN","CA","ID"];
+RG.forEach(([lo,la,rx,ry,pk,amp,tr,an],ri)=>{for(let x=lo-rx;x<=lo+rx;x+=3)for(let y=la-ry;y<=la+ry;y+=3){const d=((x-lo)/rx)**2+((y-la)/ry)**2;if(d>1||y>78||y<-58)continue;
+const w=Math.exp(-2.2*d)*(.6+.8*rn()),k=x+","+y;let c=cm.get(k);if(!c){c={lon:x,lat:y,cc:CCR[ri]?{[CCR[ri]]:1}:null,v:new Float32Array(NY*12)};cm.set(k,c)}
+for(let yr=0;yr<NY;yr++)for(let m=0;m<12;m++){let dm=Math.abs(m+1-pk);dm=Math.min(dm,12-dm);c.v[yr*12+m]+=amp*w*(Math.exp(-dm*dm/3.92)+.04)*(1+tr*yr)*(an[Y0+yr]||1)*(.75+.5*rn())}}});
+let cells=[...cm.values()],real=false;
+const inb=(c,b)=>c.lat>=b[0]&&c.lat<=b[1]&&c.lon>=b[2]&&c.lon<=b[3]&&(!FOC||FOC(c));
+function agg(b){const L=new Float64Array(NY*12),Q=new Float64Array(NY*12),H=[],R=[];for(const c of cells)if(inb(c,b))for(let i=0;i<L.length;i++){L[i]+=c.v[i];if(real)Q[i]+=c.r[i]}
+for(let i=0;i<L.length;i++){if(i>LAST){H[i]=R[i]=NaN;continue}const m=i<MOD;R[i]=real?Q[i]:Math.round(L[i]*(m?.27:1));H[i]=real?L[i]:Math.round(L[i]*(m?1+.1*(hh(i)-.5):1))}return{H,R}}
+const PRE=[["Custom area",null],["Global",[-60,75,-180,180]],["Amazon arc",[-20,0,-72,-45]],["Southern Africa",[-20,-5,12,38]],["Southeast Australia",[-40,-28,140,154]],["Siberia",[50,66,85,140]],["California and western US",[32,48,-125,-110]],["Mediterranean",[34,46,-5,35]],["Indo-Gangetic Plain",[24,33,70,88]],["Pampas and Gran Chaco",[-38,-22,-68,-55]],["Indonesia",[-8,2,100,125]]];
+const LAND=[[[-168,66],[-141,70],[-95,72],[-80,70],[-62,60],[-53,47],[-66,44],[-76,35],[-81,30],[-80,25],[-90,29],[-97,26],[-105,22],[-95,16],[-83,9],[-92,15],[-105,20],[-112,29],[-118,33],[-124,40],[-125,49],[-135,58],[-150,60],[-165,60]],[[-80,8],[-62,10],[-50,0],[-35,-6],[-40,-22],[-48,-28],[-58,-38],[-65,-42],[-68,-53],[-74,-50],[-72,-30],[-71,-18],[-81,-5]],[[-10,36],[-9,43],[0,50],[8,54],[5,62],[15,69],[30,71],[60,69],[90,76],[130,72],[160,70],[180,68],[178,64],[160,60],[140,54],[135,43],[127,38],[122,40],[121,31],[110,21],[106,10],[100,13],[103,1],[98,8],[92,22],[80,15],[77,8],[72,20],[66,25],[57,25],[56,26],[58,20],[43,13],[35,28],[32,31],[36,36],[28,37],[26,40],[22,37],[19,42],[12,44],[18,40],[16,38],[10,44],[3,43],[-5,36]],[[-17,21],[-10,35],[10,37],[32,31],[43,12],[51,12],[40,-5],[40,-15],[35,-25],[20,-35],[12,-18],[9,-1],[9,5],[-8,4],[-17,14]],[[114,-22],[122,-18],[130,-12],[137,-12],[142,-11],[146,-19],[153,-27],[150,-37],[140,-38],[130,-32],[115,-34]],[[-73,78],[-20,82],[-20,70],[-43,60],[-55,68]],[[95,5],[106,-6],[120,-9],[140,-8],[150,-6],[130,0],[118,3],[108,1]]];
+const st={b:PRE[4][1],f:0,t:LAST,dm:"h",cm:"c",cmp:Y1};let A,S,med,PART="",WD=null,WX=null,WK="",G=null,noFly=false,FOC=null;
+function setB(a){const cl=(v,m)=>Math.max(-m,Math.min(m,Math.round(v*10)/10));st.b=[cl(Math.min(a[0],a[1]),90),cl(Math.max(a[0],a[1]),90),cl(Math.min(a[2],a[3]),180),cl(Math.max(a[2],a[3]),180)];
+["s","n","w","e"].forEach((k,j)=>$(k).value=st.b[j]);update();if(!noFly){const[s,n,w,e]=st.b;flyTo((s+n)/2,(w+e)/2,Math.min(4.2,Math.max(1.55,1.35+Math.max(n-s,(e-w)*.6)/45)))}}
+function cellAvg(c){let s=0,n=0;for(let i=st.f;i<=st.t&&i<=LAST;i++){s+=st.dm=="r"?(real?c.r[i]:c.v[i]*(i<MOD?.27:1)):c.v[i];n++}return n?s/n:0}
+function update(){A=agg(st.b);S=st.dm=="h"?A.H:A.R;
+med=MN.map((_,m)=>{const a=[];for(let y=0;y<NY;y++){const v=S[y*12+m];v==v&&a.push(v)}a.sort((x,y)=>x-y);const n=a.length;return n?(a[(n-1)>>1]+a[n>>1])/2:0});
+let tot=0;const an={};for(let i=st.f;i<=st.t&&i<=LAST;i++){tot+=S[i];const y=Y0+(i/12|0);an[y]=(an[y]||0)+S[i]}
+const py=Object.keys(an).sort((a,b)=>an[b]-an[a])[0],mx=Math.max(...med),pm=med.indexOf(mx),li=Math.min(st.t,LAST),la=med[li%12]?(S[li]/med[li%12]-1)*100:0;
+$("kp").innerHTML=[["Hotspots in period",fmt(tot),st.dm=="h"?"harmonized count":"raw sensor count"],["Peak fire month",mx>0?MN[pm]:"None","median of full record"],["Highest year",py||"None",py?fmt(an[py])+" hotspots":""],["Latest month vs median",(la>=0?"+":"\u2212")+Math.abs(la).toFixed(0)+"%",MN[li%12]+" "+(Y0+(li/12|0))]].map(k=>`<div><span>${k[0]}</span><b>${k[1]}</b><span>${k[2]}</span></div>`).join("");
+$("ct").textContent=st.dm=="h"?"Harmonized burning activity calendar":"Raw sensor burning activity calendar";
+$("cn").textContent=(st.dm=="h"?"Monthly hotspots in the selected area, one row per year. Hover or tap a month for values.":"Raw counts mix two sensors: the step up after 2011 reflects the MODIS to VIIRS change, not more fire.")+(PART?" The latest month runs through "+PART+" and will look low until it completes.":"");
+$("cal").innerHTML=cal();$("sc").innerHTML=seas();$("an").innerHTML=ann();alerts();if(SCP.run){sApply(SCP.ph);sUI()}drawMap();outlook();riskUI();ctx();if(DLON)dlRun();if(PLON)placesUI()}
+function cal(){const y0=Y0+(st.f/12|0),y1=Y0+(st.t/12|0),rows=y1-y0+1,cw=48,ch=17,ox=34,oy=16,v=[];
+for(let i=st.f;i<=st.t&&i<=LAST;i++)v.push(S[i]);v.sort((a,b)=>a-b);const p=v[Math.floor(v.length*.98)]||1;
+let h=`<svg viewBox="0 0 ${ox+12*cw} ${oy+rows*ch+2}" role="img" aria-label="Calendar of monthly hotspot counts by year">`;
+MN.forEach((m,j)=>h+=`<text x="${ox+j*cw+cw/2}" y="11" text-anchor="middle">${m}</text>`);
+for(let r=0;r<rows;r++){const y=y0+r;h+=`<text x="${ox-6}" y="${oy+r*ch+12}" text-anchor="end">${y}</text>`;
+for(let m=0;m<12;m++){const i=(y-Y0)*12+m,x=S[i],ok=x==x&&i>=st.f&&i<=st.t,a=med[m]?(x/med[m]-1)*100:0;
+const c=!ok?"var(--hat)":st.cm=="c"?ramp(RC,x/p):ramp(DV,.5+Math.max(-150,Math.min(150,a))/300);
+h+=`<rect x="${ox+m*cw+1}" y="${oy+r*ch+1}" width="${cw-2}" height="${ch-2}" fill="${c}"${ok?` data-i="${i}"`:""}/>`}}
+$("lg").innerHTML=st.cm=="c"?`<span>0</span><i style="background:linear-gradient(90deg,${RC})"></i><span>${fmt(p)} or more hotspots per month</span>`:`<span>\u2212150%</span><i style="background:linear-gradient(90deg,${DV})"></i><span>+150% vs median (blue is below, orange is above)</span>`;
+return h+"</svg>"}
+function axes(W,H,l,b,t,r,mx){let h="";for(let k=0;k<=3;k++){const v=mx*k/3,y=H-b-v/(mx*1.1)*(H-b-t);h+=`<line x1="${l}" x2="${W-r}" y1="${y}" y2="${y}" stroke="var(--ln)"/><text x="${l-5}" y="${y+3}" text-anchor="end">${fmt(v)}</text>`}return h}
+function seas(){const W=360,H=210,l=40,b=22,t=8,r=6,cv=MN.map((_,m)=>S[(st.cmp-Y0)*12+m]),mx=Math.max(...med,...cv.filter(v=>v==v),1);
+const X=m=>l+(m+.5)*(W-l-r)/12,Y=v=>H-b-v/(mx*1.1)*(H-b-t);let h=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Median by month against selected year">`+axes(W,H,l,b,t,r,mx);
+med.forEach((v,m)=>h+=`<rect x="${X(m)-9}" y="${Y(v)}" width="18" height="${H-b-Y(v)}" fill="var(--bar)"/><text x="${X(m)}" y="${H-8}" text-anchor="middle">${MN[m][0]}</text>`);
+const pts=cv.map((v,m)=>v==v?[X(m),Y(v)]:null).filter(Boolean);
+h+=`<polyline points="${pts.join(" ")}" fill="none" stroke="var(--ac)" stroke-width="2"/>`+pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="2.6" fill="var(--ac)"/>`).join("");
+$("sn").textContent=`Gray bars: full-record median. Blue line: ${st.cmp}${st.cmp==Y1?" (through "+MN[LAST%12]+")":""}.`;return h+"</svg>"}
+function ann(){const W=360,H=210,l=40,b=22,t=8,r=8,n=NY-1,sum=a=>Array.from({length:n},(_,y)=>{let s=0;for(let m=0;m<12;m++)s+=a[y*12+m];return s}),R=sum(A.R),Hm=sum(A.H),mx=Math.max(...R,...Hm,1);
+const X=y=>l+y*(W-l-r)/(n-1),Y=v=>H-b-v/(mx*1.1)*(H-b-t),pl=(a,s)=>`<polyline points="${a.map((v,y)=>[X(y),Y(v)])}" fill="none" ${s}/>`;
+let h=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Annual hotspot totals, raw and harmonized">`+axes(W,H,l,b,t,r,mx);
+for(let y=0;y<n;y+=5)h+=`<text x="${X(y)}" y="${H-8}" text-anchor="middle">${Y0+y}</text>`;
+h+=`<line x1="${X(11)}" x2="${X(11)}" y1="${t}" y2="${H-b}" stroke="var(--mut)" stroke-dasharray="3 3"/><text x="${X(11)+4}" y="${t+9}">VIIRS from 2012</text>`+pl(R,'stroke="var(--mut)" stroke-width="1.8" stroke-dasharray="5 3"')+pl(Hm,'stroke="var(--ac)" stroke-width="2.2"');
+h+=`<text x="${l+6}" y="${H-b-6}" style="fill:var(--mut)">Dashed gray: raw. Solid blue: harmonized.</text>`;return h+"</svg>"}
+function alerts(){const L=[];for(let i=Math.min(st.t,LAST),k=0;k<12&&i>=st.f;k++,i--){const a=med[i%12]?(S[i]/med[i%12]-1)*100:0;if(a>=150)L.push([i,a])}
+$("al").innerHTML=L.length?L.map(([i,a])=>`<li><span><b>${MN[i%12]} ${Y0+(i/12|0)}</b> at ${S[i].toLocaleString()} hotspots</span><span>+${Math.round(a)}% vs median</span></li>`).join(""):`<li>No month in the last 12 exceeds 150% of its median.</li>`}
+const ll2v=(la,lo,r)=>{const a=la*Math.PI/180,b=lo*Math.PI/180;return new THREE.Vector3(r*Math.cos(a)*Math.cos(b),r*Math.sin(a),-r*Math.cos(a)*Math.sin(b))};
+function landTex(){const c=document.createElement("canvas");c.width=2048;c.height=1024;const g=c.getContext("2d"),X=lo=>(lo+180)/360*2048,Y=la=>(90-la)/180*1024,gr=g.createLinearGradient(0,0,0,1024);
+gr.addColorStop(0,"#0f2036");gr.addColorStop(.5,"#0b1a2c");gr.addColorStop(1,"#0f2036");g.fillStyle=gr;g.fillRect(0,0,2048,1024);
+g.filter="blur(5px)";g.fillStyle="#1e3430";LAND.forEach(p=>{g.beginPath();p.forEach((q,i)=>i?g.lineTo(X(q[0]),Y(q[1])):g.moveTo(X(q[0]),Y(q[1])));g.closePath();g.fill()});g.filter="none";
+g.strokeStyle="rgba(150,180,210,.07)";g.lineWidth=1;for(let lo=-180;lo<=180;lo+=30){g.beginPath();g.moveTo(X(lo),0);g.lineTo(X(lo),1024);g.stroke()}for(let la=-60;la<=60;la+=30){g.beginPath();g.moveTo(0,Y(la));g.lineTo(2048,Y(la));g.stroke()}
+return new THREE.CanvasTexture(c)}
+function sunDir(){const n=new Date(),h=n.getUTCHours()+n.getUTCMinutes()/60,d=(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate())-Date.UTC(n.getUTCFullYear(),0,0))/864e5;return ll2v(23.44*Math.sin(2*Math.PI*(d-81)/365),(12-h)*15,5)}
+function gResize(){if(!G)return;const el=$("gl"),w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;G.renderer.setSize(w,h,false);G.camera.aspect=w/h;G.hu.uS.value=h*G.renderer.getPixelRatio()*.9;
+const dr=$("dr"),open=!document.body.classList.contains("dc"),mob=innerWidth<=720,ox=open&&!mob?dr.offsetWidth/2:0,oy=open&&mob?dr.offsetHeight/2:0;
+if(ox||oy)G.camera.setViewOffset(w,h,ox,oy,w,h);else G.camera.clearViewOffset();G.camera.updateProjectionMatrix()}
+function flyTo(la,lo,d){if(!G)return;const r0=G.camera.position.length();G.fly={a:G.camera.position.clone().normalize(),b:ll2v(la,lo,1),r0,r:d||r0,t:0}}
+try{if(typeof THREE=="undefined")throw 0;
+const el=$("gl"),renderer=new THREE.WebGLRenderer({antialias:true}),scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(45,1,.01,200);
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setClearColor(0x050b14);el.appendChild(renderer.domElement);const gc=renderer.domElement;camera.position.set(0,0,3);
+const AU={heat:{value:0}},HU={uT:{value:0},uS:{value:600}};const dt1=v=>{const t=new THREE.DataTexture(new Uint8Array([v,v,v,255]),1,1,THREE.RGBAFormat);t.needsUpdate=true;return t},
+U={day:{value:landTex()},night:{value:dt1(0)},spec:{value:dt1(0)},sun:{value:new THREE.Vector3(1,0,0)},lit:{value:1},heat:{value:0}},
+mat=new THREE.ShaderMaterial({uniforms:U,vertexShader:`varying vec2 vUv;varying vec3 vN;varying vec3 vP;
+void main(){vUv=uv;vN=normalize(mat3(modelMatrix)*normal);vec4 w=modelMatrix*vec4(position,1.);vP=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+fragmentShader:`uniform sampler2D day,night,spec;uniform vec3 sun;uniform float lit;uniform float heat;varying vec2 vUv;varying vec3 vN;varying vec3 vP;
+void main(){vec3 N=normalize(vN),L=normalize(sun),V=normalize(cameraPosition-vP);float d=dot(N,L),k=lit>.5?smoothstep(-.12,.18,d):1.;
+vec3 dc=texture2D(day,vUv).rgb,nc=texture2D(night,vUv).rgb;vec3 dayC=lit>.5?dc*(.12+max(d,0.)):dc;vec3 col=mix(dc*.05+nc*1.3,dayC,k);
+float s=texture2D(spec,vUv).r;col+=vec3(.95,.97,1.)*pow(max(dot(reflect(-L,N),V),0.),45.)*s*.5*k;
+float hh=clamp(heat,0.,1.),rm=1.-max(dot(N,V),0.);col*=mix(vec3(1.),vec3(1.12,.92,.78),hh*.85);col+=vec3(.3,.55,1.)*pow(rm,3.)*.3*(.35+.65*k)*(1.-.5*hh)+vec3(.9,.35,.1)*pow(rm,2.)*.25*hh;gl_FragColor=vec4(col,1.);}`}),
+earth=new THREE.Mesh(new THREE.SphereGeometry(1,128,96),mat);scene.add(earth);
+const tl=new THREE.TextureLoader(),load=(u,f)=>{let i=0;const go=()=>{if(i<u.length)tl.load(u[i++],t=>{t.anisotropy=8;f(t)},undefined,go)};go()},
+PL="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/",TG="https://cdn.jsdelivr.net/npm/three-globe/example/img/";
+load([TG+"earth-blue-marble.jpg",PL+"earth_atmos_2048.jpg"],t=>{U.day.value=t});load([TG+"earth-night.jpg",PL+"earth_lights_2048.png"],t=>{U.night.value=t});load([PL+"earth_specular_2048.jpg"],t=>{U.spec.value=t});
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.08,48,48),new THREE.ShaderMaterial({uniforms:AU,transparent:true,side:THREE.BackSide,blending:THREE.AdditiveBlending,depthWrite:false,
+vertexShader:"varying vec3 n;void main(){n=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+fragmentShader:"varying vec3 n;uniform float heat;void main(){float i=pow(max(0.,.72-dot(n,vec3(0.,0.,1.))),3.);float hh=clamp(heat,0.,1.);vec3 c=mix(vec3(.3,.6,1.),vec3(1.,.5,.2),hh);gl_FragColor=vec4(c,1.)*i*(.8+.6*hh+.3*max(-heat,0.));}"})));
+const sp=[];for(let i=0;i<1400;i++){const u=Math.random()*2-1,t=Math.random()*6.283,r=Math.sqrt(1-u*u);sp.push(60*r*Math.cos(t),60*u,60*r*Math.sin(t))}
+const sg=new THREE.BufferGeometry();sg.setAttribute("position",new THREE.Float32BufferAttribute(sp,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({size:1.3,sizeAttenuation:false,color:0xcfd8e6})));
+const line=new THREE.LineLoop(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:0x4fc3f7}));line.frustumCulled=false;scene.add(line);
+const ctl=THREE.OrbitControls?new THREE.OrbitControls(camera,gc):null;
+if(ctl){ctl.enablePan=false;ctl.enableDamping=true;ctl.dampingFactor=.08;ctl.minDistance=1.12;ctl.maxDistance=6;ctl.rotateSpeed=.55;ctl.autoRotateSpeed=.5;ctl.addEventListener("start",()=>{$("ga").checked=false})}
+G={renderer,scene,camera,earth,line,box:new THREE.BoxGeometry(1,1,1),bm:new THREE.MeshBasicMaterial(),m:new THREE.Matrix4(),q:new THREE.Quaternion(),sv:new THREE.Vector3(),col:new THREE.Color(),dim:new THREE.Color(0x24303f),up:new THREE.Vector3(0,1,0),inst:null,arw:null,fly:null,tv:[],heat:0,halo:null,hu:HU};
+G.halo=new THREE.Points(new THREE.BufferGeometry(),new THREE.ShaderMaterial({uniforms:HU,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+vertexShader:`attribute float aSize;attribute float aPh;attribute vec3 aCol;uniform float uT;uniform float uS;varying vec3 vC;varying float vA;
+void main(){vC=aCol;vec4 mv=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*mv;float p=.85+.25*sin(uT*2.5+aPh);gl_PointSize=aSize*p*uS/-mv.z;vA=p;}`,
+fragmentShader:`varying vec3 vC;varying float vA;void main(){float d=length(gl_PointCoord-.5)*2.;float a=pow(max(1.-d,0.),2.);gl_FragColor=vec4(vC,a*vA);}`}));G.halo.frustumCulled=false;scene.add(G.halo);
+const ray=new THREE.Raycaster(),mp=new THREE.Vector2(),cast=(e,o)=>{const r=gc.getBoundingClientRect();mp.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mp,camera);return ray.intersectObject(o)},
+hit=e=>{const h=cast(e,earth)[0];if(!h)return null;const p=h.point.clone().normalize();return[Math.asin(p.y)*180/Math.PI,Math.atan2(-p.z,p.x)*180/Math.PI]};let gd=null,pd=null;const pick=e=>{const he=cast(e,earth)[0],hc=G.inst&&cast(e,G.inst)[0];if(hc&&hc.instanceId!=null&&(!he||hc.distance<he.distance+.02)&&(!FOC||FOC(cells[hc.instanceId])))selectCell(hc.instanceId)};
+gc.onpointerdown=e=>{pd={x:e.clientX,y:e.clientY};if(st.gm!="d")return;const p=hit(e);if(!p)return;gc.setPointerCapture(e.pointerId);gd={p,moved:false}};
+gc.onpointermove=e=>{if(gd){const p=hit(e);if(p){gd.moved=true;$("pre").value="0";noFly=true;setB([p[0],gd.p[0],gd.p[1],p[1]]);noFly=false}return}
+if(!G.inst)return;const he=cast(e,earth)[0],hc=cast(e,G.inst)[0];
+if(hc&&hc.instanceId!=null&&(!he||hc.distance<he.distance+.02)&&(!FOC||FOC(cells[hc.instanceId]))){const c=cells[hc.instanceId];tip.innerHTML=`<b>${c.lat.toFixed(1)}\u00b0, ${c.lon.toFixed(1)}\u00b0</b><br>${fmt(G.tv[hc.instanceId])} ${MT()}`;tip.style.display="block";tip.style.left=Math.min(e.clientX+14,innerWidth-220)+"px";tip.style.top=e.clientY+14+"px"}else tip.style.display="none"};
+gc.onpointerup=gc.onpointercancel=e=>{if(!gd&&pd&&e.type=="pointerup"&&st.gm!="d"&&Math.hypot(e.clientX-pd.x,e.clientY-pd.y)<5)pick(e);if(gd&&!gd.moved){$("pre").value="0";noFly=true;setB([gd.p[0]-4,gd.p[0]+4,gd.p[1]-4,gd.p[1]+4]);noFly=false}gd=null};
+gc.onpointerleave=()=>tip.style.display="none";gc.ondblclick=e=>{const p=hit(e);if(p)flyTo(p[0],p[1],1.6)};
+(function loop(){requestAnimationFrame(loop);const f=G.fly;if(f){f.t=Math.min(1,f.t+.035);const k=f.t*f.t*(3-2*f.t);camera.position.copy(f.a.clone().lerp(f.b,k).normalize().multiplyScalar(f.r0+(f.r-f.r0)*k));if(f.t==1)G.fly=null}
+const dr=st.gm=="d";U.sun.value.copy(sunDir());U.lit.value=$("gn").checked?1:0;const ht=st.vm=="x"&&SCP.run?SCP.heat:0;G.heat+=(ht-G.heat)*.04;U.heat.value=AU.heat.value=G.heat;HU.uT.value=performance.now()/1000;gc.style.cursor=dr?"crosshair":"grab";
+if(ctl){ctl.enabled=!dr;ctl.autoRotate=$("ga").checked&&!dr&&!f;ctl.update()}else camera.lookAt(0,0,0);renderer.render(scene,camera)})();
+new ResizeObserver(gResize).observe(el);gResize();
+$("gr").onclick=()=>{const[s,n,w,e]=st.b;flyTo((s+n)/2,(w+e)/2,3)};
+}catch(_){G=null;$("gl").innerHTML='<p style="color:#9fb0c4;padding:24px;margin:0">The 3D globe needs WebGL and the three.js library, which are not available here.</p>'}
+function drawMap(){if(!G)return;const tv=cells.map(cval),so=tv.filter((_,k)=>!FOC||FOC(cells[k])).sort((a,b)=>a-b),p=st.vm=="x"&&st.fx=="c"?100:so[Math.floor(so.length*.95)]||1;G.tv=tv;
+const HL=[];if(!G.inst||G.inst.count!=cells.length){if(G.inst){G.scene.remove(G.inst);G.inst.dispose()}G.inst=new THREE.InstancedMesh(G.box,G.bm,cells.length);G.inst.frustumCulled=false;G.scene.add(G.inst)}
+cells.forEach((c,k)=>{const hid=FOC&&!FOC(c),t=Math.min(1,Math.abs(tv[k])/p),h=st.vm=="r"?.004+[.012,.03,.06,.1][c.rk?c.rk.l:0]:.004+.1*Math.pow(t,.8),n=ll2v(c.lat,c.lon,1),e=G.up.clone().cross(n).normalize(),no=n.clone().cross(e);
+G.q.setFromRotationMatrix(G.m.makeBasis(e,no,n));G.m.compose(n.multiplyScalar(1+h/2),G.q,G.sv.set(hid?0:.048*Math.max(.35,Math.cos(c.lat*Math.PI/180)),hid?0:.048,hid?0:h));G.inst.setMatrixAt(k,G.m);
+G.col.set(st.vm=="r"?RCOL[c.rk?c.rk.l:0]:st.vm=="x"&&st.fx=="c"?ramp(DV,.5+Math.max(-100,Math.min(100,tv[k]))/200):ramp(RC,.12+.88*t));if(!inb(c,st.b))G.col.lerp(G.dim,.6);G.inst.setColorAt(k,G.col);if(!hid&&HLF(c,t))HL.push([c,t,h,G.col.clone()])});
+G.inst.instanceMatrix.needsUpdate=true;if(G.inst.instanceColor)G.inst.instanceColor.needsUpdate=true;
+{const L=HL.sort((a,b)=>b[1]-a[1]).slice(0,350),P=[],S=[],Ph=[],Co=[];L.forEach(([c,t,h,col],i)=>{const v=ll2v(c.lat,c.lon,1+h+.006);P.push(v.x,v.y,v.z);S.push(.05+.1*t+(st.vm=="r"?.03*(c.rk?c.rk.l:0):0));Ph.push(i*1.7);Co.push(col.r,col.g,col.b)});
+const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(P,3));g.setAttribute("aSize",new THREE.Float32BufferAttribute(S,1));g.setAttribute("aPh",new THREE.Float32BufferAttribute(Ph,1));g.setAttribute("aCol",new THREE.Float32BufferAttribute(Co,3));G.halo.geometry.dispose();G.halo.geometry=g}
+const[s,n,w,e]=st.b,P=[],d=Math.max(.5,Math.min(2,(e-w)/60));for(let lo=w;lo<=e;lo+=d)P.push(ll2v(s,lo,1.006));for(let la=s;la<=n;la++)P.push(ll2v(la,e,1.006));for(let lo=e;lo>=w;lo-=d)P.push(ll2v(n,lo,1.006));for(let la=n;la>=s;la--)P.push(ll2v(la,w,1.006));
+G.line.geometry.dispose();G.line.geometry.setFromPoints(P);
+if(G.arw){G.scene.remove(G.arw);G.arw=null}
+if(WD&&$("lx").checked){const o=ll2v(WD.la,WD.lo,1.01),nn=o.clone().normalize(),ea=G.up.clone().cross(nn).normalize(),no=nn.clone().cross(ea),b=WD.to*Math.PI/180;G.arw=new THREE.ArrowHelper(ea.multiplyScalar(Math.sin(b)).add(no.multiplyScalar(Math.cos(b))).normalize(),o,.22,0xffffff,.06,.035);G.scene.add(G.arw)}
+if(G.sl){G.scene.remove(G.sl);G.sl.geometry.dispose();G.sl=null}
+if(st.sel>=0&&cells[st.sel]){const c=cells[st.sel],q=[[-1.5,-1.5],[-1.5,1.5],[1.5,1.5],[1.5,-1.5]].map(d=>ll2v(c.lat+d[0],c.lon+d[1],1.12));G.sl=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints([q[0],q[1],q[1],q[2],q[2],q[3],q[3],q[0],ll2v(c.lat,c.lon,1),ll2v(c.lat,c.lon,1.45)]),new THREE.LineBasicMaterial({color:0xffffff}));G.sl.frustumCulled=false;G.scene.add(G.sl)}
+legend()}
+$("pre").innerHTML=PRE.map((p,i)=>`<option value="${i}">${p[0]}</option>`).join("");$("pre").value="4";
+$("pre").onchange=e=>{const b=PRE[+e.target.value][1];b&&setB(b)};
+["s","n","w","e"].forEach(k=>$(k).onchange=()=>{$("pre").value="0";setB([+$("s").value,+$("n").value,+$("w").value,+$("e").value])});
+$("cy").innerHTML=Array.from({length:NY},(_,i)=>`<option>${Y0+i}</option>`).join("");$("cy").value=Y1;
+$("cy").onchange=e=>{st.cmp=+e.target.value;update()};
+const pm=v=>{const[y,m]=v.split("-").map(Number);return Math.max(0,Math.min(LAST,(y-Y0)*12+m-1))};
+["f","t"].forEach(k=>$(k).onchange=()=>{if(!$(k).value)return;st[k]=pm($(k).value);if(st.f>st.t){const x=st.f;st.f=st.t;st.t=x}
+const s=i=>(Y0+(i/12|0))+"-"+String(i%12+1).padStart(2,"0");$("f").value=s(st.f);$("t").value=s(st.t);update()});
+document.querySelectorAll(".seg input").forEach(i=>i.onchange=()=>{st[i.name]=i.value;update()});
+const tip=$("tip");$("cal").onpointermove=e=>{const r=e.target.closest("rect[data-i]");if(!r){tip.style.display="none";return}
+const i=+r.dataset.i,m=i%12,a=med[m]?(S[i]/med[m]-1)*100:0;tip.innerHTML=`<b>${MN[m]} ${Y0+(i/12|0)}</b><br>${S[i].toLocaleString()} hotspots<br>${a>=0?"+":"\u2212"}${Math.abs(a).toFixed(0)}% vs median (${Math.round(med[m]).toLocaleString()})`;
+tip.style.display="block";tip.style.left=Math.min(e.clientX+14,innerWidth-200)+"px";tip.style.top=e.clientY+14+"px"};
+$("cal").onpointerleave=()=>tip.style.display="none";
+function expo(){const k=$("fx").value,sel=cells.filter(c=>inb(c,st.b)).map(c=>[c.lat,c.lon,Math.round(cellAvg(c)*(st.t-st.f+1))]);let o="";
+if(k=="m"){o="year,month,hotspots_raw,hotspots_harmonized,baseline_median,anomaly_pct\n";for(let i=st.f;i<=st.t&&i<=LAST;i++){const b=med[i%12];o+=[Y0+(i/12|0),i%12+1,A.R[i],A.H[i],Math.round(b),b?((S[i]/b-1)*100).toFixed(1):""].join(",")+"\n"}}
+else if(k=="g")o="latitude,longitude,hotspots_in_period\n"+sel.map(r=>r.join(",")).join("\n");
+else o=JSON.stringify({type:"FeatureCollection",features:sel.map(r=>({type:"Feature",geometry:{type:"Point",coordinates:[r[1],r[0]]},properties:{hotspots_in_period:r[2]}}))},null,1);
+$("ta").value=o}
+$("ex").onclick=()=>{expo();$("dx").showModal()};$("fx").onchange=expo;$("cl").onclick=()=>$("dx").close();
+$("cp").onclick=()=>{$("ta").select();try{navigator.clipboard.writeText($("ta").value)}catch(_){document.execCommand("copy")}$("cp").textContent="Copied";setTimeout(()=>$("cp").textContent="Copy",1500)};
+$("dl").onclick=async()=>{const k=$("fx").value,tx=$("ta").value;let d=null;try{d=window.claude?await claude.use("downloads"):null}catch(_){}
+if(d){try{await d.save({filename:"pyroscale_"+{m:"monthly.csv",g:"grid.csv",j:"grid.json"}[k],data:tx});return}catch(_){}}
+const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([tx],{type:k=="j"?"application/geo+json":"text/csv"}));a.download="pyroscale_"+{m:"monthly.csv",g:"grid.csv",j:"grid.geojson"}[k];a.click()};
+function useData(d,label){const [ey,em]=d.end.split("-").map(Number),s=i=>(Y0+(i/12|0))+"-"+String(i%12+1).padStart(2,"0");
+cells=d.cells.map(c=>({lat:c.lat,lon:c.lon,r:c.r,cc:c.cc||null,v:Float32Array.from(c.h)}));real=true;LAST=(ey-Y0)*12+em-1;st.f=0;st.t=LAST;st.cmp=Y0+(LAST/12|0);$("cy").value=st.cmp;
+$("f").value=s(0);$("t").max=$("f").max=s(LAST);$("t").value=s(LAST);$("tg").textContent=label+": through "+d.end+(d.asof?", updated "+d.asof.slice(0,10):"");PART=d.partial||"";attachFC(FCfile||demoFC());if(SCP.run)sApply(SCP.ph);update()}
+$("ld").onchange=async e=>{const fs=[...e.target.files];if(!fs.length)return;let d=null,fc=null,dn="";
+try{for(const f of fs){const t=await f.text(),j=JSON.parse(t);if(j.cells&&j.cells[0]&&j.cells[0].h){d=j;dn=f.name;idb("put",t)}else if(j.cells&&j.start&&j.months){fc=j;idb("put",t,"f")}}
+if(fc)FCfile=fc;if(d)useData(d,"Loaded "+dn);else if(fc){attachFC(fc);update()}
+if(fc)$("tg").textContent+=" + ML forecast";if(!d&&!fc)$("tg").textContent="No data or forecast found in the file"}catch(_){$("tg").textContent="Could not read file"}
+e.target.value=""};
+const med1=a=>{a=a.filter(v=>v==v).sort((x,y)=>x-y);const n=a.length;return n?(a[(n-1)>>1]+a[n>>1])/2:0};
+const dev=a=>{const mm=MN.map((_,m)=>med1(a.filter((_,i)=>i%12==m)));return a.map((v,i)=>mm[i%12]?(v/mm[i%12]-1)*100:NaN)};
+const roll=(a,k)=>a.map((_,i)=>{let s=0,n=0;for(let j=Math.max(0,i-k+1);j<=i;j++)if(a[j]==a[j]){s+=a[j];n++}return n==k?s/n:NaN});
+const corr=(x,y)=>{const p=[];x.forEach((v,i)=>v==v&&y[i]==y[i]&&p.push([v,y[i]]));const n=p.length;if(n<12)return null;const mx=p.reduce((s,q)=>s+q[0],0)/n,my=p.reduce((s,q)=>s+q[1],0)/n;let a=0,b=0,c=0;p.forEach(q=>{a+=(q[0]-mx)*(q[1]-my);b+=(q[0]-mx)**2;c+=(q[1]-my)**2});return b&&c?[a/Math.sqrt(b*c),n]:null};
+const mon=(d,k,mean)=>{const s=Array(NY*12).fill(0),n=Array(NY*12).fill(0);d.time.forEach((t,j)=>{const v=d[k]&&d[k][j];if(v==null)return;const i=(+t.slice(0,4)-Y0)*12+ +t.slice(5,7)-1;if(i>=0&&i<s.length){s[i]+=v;n[i]++}});return s.map((v,i)=>n[i]?mean?v/n[i]:v:NaN)};
+async function wxRun(){const b=st.b,la=((b[0]+b[1])/2).toFixed(2),lo=((b[2]+b[3])/2).toFixed(2),k=la+","+lo;
+if(WK!=k){WX=null;$("wn").textContent="Loading ERA5 weather for "+la+", "+lo+"...";
+try{const lim=new Date(Date.now()-6*864e5).toISOString().slice(0,10),e0=(Y0+(LAST/12|0))+"-"+String(LAST%12+1).padStart(2,"0")+"-28",e=e0<lim?e0:lim,
+q=v=>fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${la}&longitude=${lo}&start_date=2001-01-01&end_date=${e}&daily=${v}&timezone=UTC`).then(r=>{if(!r.ok)throw 0;return r.json()}),a=(await q("precipitation_sum,temperature_2m_mean")).daily;let x={time:[]};
+try{x=(await q("soil_moisture_0_to_7cm_mean,relative_humidity_2m_mean")).daily}catch(_){}
+WX={P:mon(a,"precipitation_sum"),T:mon(a,"temperature_2m_mean",1),SM:mon(x,"soil_moisture_0_to_7cm_mean",1)};WK=k}
+catch(_){$("wn").textContent="Could not reach Open-Meteo. This layer needs internet access from the page, so it works on a self-hosted copy rather than in the claude.ai preview.";$("wc").innerHTML="";$("wk").textContent="";return}}
+wxDraw(la,lo)}
+function wxDraw(la,lo){const H=S.map((v,i)=>med[i%12]?(v/med[i%12]-1)*100:NaN),R=dev(roll(WX.P,3)),M=dev(WX.SM),hm=M.some(v=>v==v),f=st.f,t=Math.min(st.t,LAST),n=t-f+1,W=640,l=44,pw=W-l-6,X=i=>l+(i-f+.5)*pw/n,Y=(c,v)=>c-Math.max(-150,Math.min(150,v))/150*36;
+let h=`<svg viewBox="0 0 ${W} 196" role="img" aria-label="Monthly hotspot anomaly against rainfall and soil moisture anomaly">`;
+[[46,"Hotspots"],[146,"Weather"]].forEach(([c,tx])=>h+=`<line x1="${l}" x2="${W-6}" y1="${c}" y2="${c}" stroke="var(--ln)"/><text x="${l-4}" y="${c-30}" text-anchor="end">+150%</text><text x="${l-4}" y="${c+40}" text-anchor="end">\u2212150%</text><text x="${l+4}" y="${c-30}">${tx}</text>`);
+for(let i=f;i<=t;i++)if(H[i]==H[i]){const y=Y(46,H[i]);h+=`<rect x="${X(i)-Math.max(.5,pw/n*.4)}" y="${Math.min(y,46)}" width="${Math.max(1,pw/n*.8)}" height="${Math.abs(y-46)}" fill="${H[i]>=0?"var(--ac)":"var(--bar)"}"/>`}
+const ln=(a,c)=>{const p=[];for(let i=f;i<=t;i++)if(a[i]==a[i])p.push(X(i)+","+Y(146,a[i]));return p.length?`<polyline points="${p.join(" ")}" fill="none" stroke="${c}" stroke-width="1.6"/>`:""};
+for(let y=Math.ceil(f/12);y*12<=t;y+=Math.max(1,Math.round(n/96)))h+=`<text x="${X(y*12)}" y="192" text-anchor="middle">${Y0+y}</text>`;
+$("wc").innerHTML=h+ln(R,"#2c7bb6")+(hm?ln(M,"#c2410c"):"")+"</svg>";
+const c1=corr(H.slice(f,t+1),R.slice(f,t+1)),c2=hm&&corr(H.slice(f,t+1),M.slice(f,t+1)),fm=v=>v?"r = "+(v[0]<0?"\u2212":"+")+Math.abs(v[0]).toFixed(2)+" over "+v[1]+" months":"not enough overlap",lt=WX.T[t];
+$("wn").textContent="Top: hotspot anomaly against the full-record median. Bottom: 3-month rainfall anomaly (blue)"+(hm?" and soil moisture anomaly (orange)":"")+", as percent from each calendar month median, at "+la+", "+lo+" (ERA5 via Open-Meteo).";
+$("wk").textContent="Correlation with hotspot anomaly: rainfall "+fm(c1)+(hm?"; soil moisture "+fm(c2):"; soil moisture unavailable for this request")+(lt==lt?". Mean temperature in "+MN[t%12]+" "+(Y0+(t/12|0))+" was "+lt.toFixed(1)+" \u00b0C against a "+med1(WX.T.filter((_,i)=>i%12==t%12)).toFixed(1)+" \u00b0C median":"")+". Correlation is not proof of cause, and the series describes one point at the centre of the area."}
+async function wdRun(){const b=st.b,la=(b[0]+b[1])/2,lo=(b[2]+b[3])/2,T=$("wdt");T.textContent="Loading current wind and air quality...";
+try{const j=u=>fetch(u).then(r=>{if(!r.ok)throw 0;return r.json()}),[w,a]=await Promise.all([j(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh`),j(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${la}&longitude=${lo}&current=pm2_5,us_aqi`)]),
+c=w.current,q=a.current,fr=c.wind_direction_10m,to=(fr+180)%360,D=["north","northeast","east","southeast","south","southwest","west","northwest"],nm=v=>D[Math.round(v/45)%8];
+WD={la,lo,to};T.textContent="Wind at the centre of the area blows from the "+nm(fr)+" ("+Math.round(fr)+"\u00b0) at "+Math.round(c.wind_speed_10m)+" km/h, so smoke drifts toward the "+nm(to)+". PM2.5 is "+(q.pm2_5??"n/a")+" \u00b5g/m\u00b3 and the US AQI is "+(q.us_aqi??"n/a")+" there now. This is a direction indicator, not a dispersion forecast; use a small area for local conditions.";drawMap()}
+catch(_){WD=null;T.textContent="Could not reach Open-Meteo. This layer needs internet access from the page, so it works on a self-hosted copy rather than in the claude.ai preview."}}
+let tmr;function ctx(){clearTimeout(tmr);tmr=setTimeout(()=>{$("lw").checked&&wxRun();$("lx").checked&&wdRun()},600)}
+$("lw").onchange=()=>{$("wx").hidden=!$("lw").checked;ctx()};
+$("lx").onchange=()=>{$("wd").hidden=!$("lx").checked;drawMap();ctx()};
+const idb=(m,v,k)=>new Promise(res=>{try{const q=indexedDB.open("pyro",1);q.onupgradeneeded=()=>q.result.createObjectStore("k");q.onsuccess=()=>{const s=q.result.transaction("k",m=="get"?"readonly":"readwrite").objectStore("k"),r=m=="get"?s.get(k||"d"):s.put(v,k||"d");r.onsuccess=()=>res(r.result);r.onerror=()=>res()};q.onerror=()=>res()}catch(_){res()}});
+(async()=>{let t;try{const r=await fetch("pyroscale_data.json",{cache:"no-cache"});if(r.ok)t=await r.text()}catch(_){}
+if(t)try{useData(JSON.parse(t),"Live data");idb("put",t);return}catch(_){}
+const c=await idb("get"),cf=await idb("get",0,"f");if(cf)try{FCfile=JSON.parse(cf)}catch(_){}if(c)try{useData(JSON.parse(c),"Saved copy")}catch(_){}})();
+addEventListener("resize",gResize);
+st.vm="o";st.fk=1;st.rs="s";st.sel=-1;
+let FC=null,FCfile=null,FS=0,RK=[],RKS=[];
+const FH=24,LV=["Normal","Elevated","High","Extreme"],RCOL=["#3d5875","#ffd166","#ff7a45","#ff2d55"],RT={c:[.8,.87],s:[.9,.97],t:[.95,.99]},GC=new Map();
+const ym=i=>(Y0+(i/12|0))+"-"+String(i%12+1).padStart(2,"0"),mname=i=>MN[i%12]+" "+(Y0+(i/12|0)),lcIdx=()=>LAST-(PART?1:0);
+const cval=c=>st.vm=="x"?(SCP.run&&c.sB!=null?(st.fx=="c"?c.sd:(st.fx=="b"?c.sB:c.sP)/12):0):st.vm=="f"?(c.f?c.f[st.fk-1]:0):st.vm=="r"?(c.rk?c.rk.v:0):cellAvg(c);
+const MT=()=>st.vm=="x"?(st.fx=="c"?"% change vs the current path":"hotspots per month, "+(st.fx=="b"?"current path":"scenario")):st.vm=="f"?"hotspots forecast for "+mname(FS+st.fk-1):st.vm=="r"?"hotspots forecast this month":"hotspots per month on average";
+function geo(la,lo){const k=la+","+lo;if(!GC.has(k))GC.set(k,fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${la}&longitude=${lo}&localityLanguage=en`).then(r=>r.ok?r.json():{}).then(j=>[...new Set([j.city||j.locality,j.principalSubdivision,j.countryName].filter(Boolean))].join(", ")).catch(()=>""));return GC.get(k)}
+function demoFC(){const lc=lcIdx(),F={demo:1,start:ym(lc+1),lo:[],hi:[],cells:[]};
+for(let k=1;k<=FH;k++){F.lo.push(Math.exp(-(.2+.025*k)));F.hi.push(Math.exp(.25+.035*k))}
+cells.forEach(c=>{const v=c.v,cl=i=>{const a=[];for(let j=i%12;j<=lc;j+=12)a.push(v[j]);a.sort((x,y)=>x-y);return a[a.length>>1]||0},
+b3=(cl(lc)+cl(lc-1)+cl(lc-2))/3,an=Math.min(3,Math.max(.33,((v[lc]+v[lc-1]+v[lc-2])/3+1)/(b3+1))),f=[];
+for(let k=1;k<=FH;k++)f.push(Math.round(cl(lc+k)*Math.pow(an,Math.pow(.7,k))));F.cells.push({lat:c.lat,lon:c.lon,f})});return F}
+function attachFC(F){derive();CCB.clear();setFocus();FC=F;$("tf").textContent=F.demo?"Forecast: statistical baseline":"Forecast: ML model";$("tf").style.color=F.demo?"#f2c14e":"#7ddf9a";const[y,m]=F.start.split("-").map(Number);FS=(y-Y0)*12+m-1;const mp=new Map(F.cells.map(c=>[c.lat+","+c.lon,c.f]));cells.forEach(c=>{c.f=mp.get(c.lat+","+c.lon)||null});riskCalc()}
+function riskCalc(){if(!FC)return;const[h,x]=RT[st.rs],tm=FS%12;
+cells.forEach(c=>{c.rk=null;if(!c.f)return;const v=c.f[0],a=[];for(let i=tm;i<FS&&i<c.v.length;i+=12)a.push(c.v[i]);if(a.length<8)return;const pr=a.filter(z=>z<=v).length/a.length;c.rk={v,pr,l:v<20?0:pr>=x?3:pr>=h?2:pr>=.75?1:0}});clusters()}
+function clusters(){const fl=[];cells.forEach((c,k)=>{if(c.rk&&c.rk.l>=2&&(!FOC||FOC(c)))fl.push(k)});const key=new Map(fl.map(k=>[cells[k].lat+","+cells[k].lon,k])),seen=new Set(),out=[];
+for(const k of fl){if(seen.has(k))continue;const q=[k],m=[];seen.add(k);while(q.length){const i=q.pop();m.push(i);const c=cells[i];for(let dy=-3;dy<=3;dy+=3)for(let dx=-3;dx<=3;dx+=3){const j=key.get((c.lat+dy)+","+(c.lon+dx));if(j!=null&&!seen.has(j)){seen.add(j);q.push(j)}}}
+const ls=m.map(i=>cells[i].lat),os=m.map(i=>cells[i].lon);out.push({m,n:m.length,l:Math.max(...m.map(i=>cells[i].rk.l)),tot:m.reduce((s,i)=>s+cells[i].rk.v,0),b:[Math.min(...ls)-1.5,Math.max(...ls)+1.5,Math.min(...os)-1.5,Math.max(...os)+1.5]})}
+out.sort((a,b)=>b.l-a.l||b.tot-a.tot);RK=out;riskUI()}
+function riskUI(){if(!FC){$("rks").textContent="No forecast loaded, so risk cannot be assessed.";$("rkl").innerHTML="";return}
+const sc=$("rkm").checked,L=RK.filter(r=>r.l>=2&&(!sc||r.m.some(i=>inb(cells[i],st.b))));RKS=L.slice(0,8);
+$("rks").textContent=(L.length?L.length+" area"+(L.length>1?"s":"")+" at high or extreme risk":"No areas at high risk")+" for "+mname(FS)+(sc?" in your selected area":FOC?" in your selected places":" worldwide")+(FC.demo?" (statistical baseline, not the ML model: load pyroscale_forecast.json under Period and view in the Explore tab)":"")+".";
+$("rkl").innerHTML=RKS.map((r,j)=>`<li><span><b>${LV[r.l]}</b> <span data-n="${j}">${((r.b[0]+r.b[1])/2).toFixed(0)}\u00b0, ${((r.b[2]+r.b[3])/2).toFixed(0)}\u00b0</span><br><small>${r.n} cell${r.n>1?"s":""}, about ${fmt(r.tot)} hotspots expected</small></span><button data-r="${j}">Show</button></li>`).join("");
+RKS.forEach((r,j)=>geo((r.b[0]+r.b[1])/2,(r.b[2]+r.b[3])/2).then(n=>{const e=document.querySelector(`[data-n="${j}"]`);if(e&&n)e.textContent=n}))}
+function fch(hs,lc,F,md,W,H,n0,full){const x0=lc-n0+1,n=FS+FH-x0,l=full?44:6,b=full?22:4,t=6,lo=F.map((v,k)=>(v+1)*FC.lo[k]-1),hi=F.map((v,k)=>(v+1)*FC.hi[k]-1),vs=[];
+for(let i=x0;i<=lc;i++)if(hs[i]==hs[i])vs.push(hs[i]);const mx=Math.max(...vs,...hi,1)*1.05,X=i=>l+(i-x0)*(W-l-6)/(n-1),Y=v=>H-b-Math.max(0,v)/mx*(H-b-t);
+let h=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly hotspots with forecast">`;
+if(full)for(let k=0;k<=3;k++){const v=mx*k/3;h+=`<line x1="${l}" x2="${W-6}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--ln)"/><text x="${l-5}" y="${Y(v)+3}" text-anchor="end">${fmt(v)}</text>`}
+const mp=[];for(let i=x0;i<FS+FH;i++)mp.push(X(i)+","+Y(md[i%12]));
+h+=`<polyline points="${mp.join(" ")}" fill="none" stroke="var(--mut)" stroke-dasharray="2 3"/>`;
+h+=`<polygon points="${hi.map((v,k)=>X(FS+k)+","+Y(v)).concat(lo.map((v,k)=>X(FS+FH-1-k)+","+Y(lo[FH-1-k]))).join(" ")}" fill="var(--ac)" opacity=".2"/>`;
+const hp=[];for(let i=x0;i<=lc;i++)if(hs[i]==hs[i])hp.push(X(i)+","+Y(hs[i]));
+h+=`<polyline points="${hp.join(" ")}" fill="none" stroke="var(--ink)" stroke-width="1.6"/><polyline points="${[X(lc)+","+Y(hs[lc]),...F.map((v,k)=>X(FS+k)+","+Y(v))].join(" ")}" fill="none" stroke="var(--ac)" stroke-width="2" stroke-dasharray="5 3"/>`;
+if(full)for(let i=x0;i<FS+FH;i+=12)h+=`<text x="${X(i)}" y="${H-7}" text-anchor="middle">${MN[i%12]} ${String(Y0+(i/12|0)).slice(2)}</text>`;
+return h+"</svg>"}
+function outlook(){const el=$("oc"),no=t=>{el.innerHTML="";$("on").textContent=t;$("ok").textContent=""};if(!FC||!A)return no("No forecast loaded.");
+const sel=cells.filter(c=>c.f&&inb(c,st.b)),lc=lcIdx();if(!sel.length)return no("No forecast cells fall inside this area.");
+const F=Array.from({length:FH},(_,k)=>sel.reduce((s,c)=>s+c.f[k],0)),hs=A.H,md=MN.map((_,m)=>med1(Array.from({length:NY},(_,y)=>y*12+m<=lc?hs[y*12+m]:NaN)));
+el.innerHTML=fch(hs,lc,F,md,640,230,48,true);
+const r6=F.slice(0,6).map((v,k)=>{const m=(FS+k)%12,d=md[m]?(v/md[m]-1)*100:0;return MN[m]+" "+fmt(v)+" ("+(d>=0?"+":"\u2212")+Math.abs(d).toFixed(0)+"%)"}).join(", "),y12=F.slice(0,12).reduce((a,b)=>a+b,0),ty=md.reduce((a,b)=>a+b,0),sk=FC.skill,g=sk?sk.findIndex(v=>v<.02):-1,gm=sk?(g<0?FH:g):0;
+$("on").textContent=FC.demo?"Statistical baseline, not the ML model: each cell\u2019s seasonal median, with its current anomaly fading over a few months. Run forecast_pyroscale.py to load the LightGBM forecast.":"LightGBM forecast from "+FC.origin+", trained on the harmonized series. Solid: history. Dashed: forecast. Band: 80% range for single cells, applied to the total, so wider than the true range. Dotted: usual.";
+$("ok").textContent="Next 6 months, hotspots and change from usual: "+r6+". Next 12 months: "+fmt(y12)+" against a typical "+fmt(ty)+". "+(sk?"In the hold-out test the model beat the seasonal median by "+Math.round(sk[0]*100)+"% at 1 month and "+Math.round(sk[2]*100)+"% at 3 months"+(gm<FH?", and was no better beyond about "+gm+" months, so treat later months as the seasonal outlook.":"."):"No backtest is available for this baseline.")}
+function selectCell(k){st.sel=k;showCell();drawMap();tab("p")}
+function showCell(){const el=$("ci"),c=cells[st.sel];if(!c){el.innerHTML='<p class="note" style="margin:0">Click a column on the globe to analyze that point here.</p>';return}
+const lc=lcIdx(),v=c.v,md=c.md,pk=md.indexOf(Math.max(...md)),cs=scopeCells();let tot=0;const an={};
+for(let i=st.f;i<=st.t&&i<=LAST;i++){tot+=v[i];const y=Y0+(i/12|0);an[y]=(an[y]||0)+v[i]}
+const py=Object.keys(an).sort((a,b)=>an[b]-an[a])[0],r=c.rk,
+lv=LY.filter(l=>SEL.has(l[0])).map(l=>{const x=l[2](c),a=cells.map(l[2]).filter(Number.isFinite);return `<tr><td>${l[1]}</td><td>${f2(x)}</td><td>${Number.isFinite(x)&&a.length?ord(Math.round(a.filter(z=>z<=x).length/a.length*100)):"n/a"}</td></tr>`}).join("");
+el.innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h2 style="margin:0">Cell ${cn(c)}</h2><button id="cx" aria-label="Close">\u00d7</button></div><p class="note" id="cp" style="margin:4px 0 10px">Looking up the place name...</p>
+<table><tr><td>Hotspots in the chosen period</td><td><b>${fmt(tot)}</b></td></tr><tr><td>Last full month (${mname(lc)})</td><td><b>${fmt(v[lc])}</b>, ${sgn(c.an)} vs usual</td></tr><tr><td>Usual peak month</td><td><b>${MN[pk]}</b> (${fmt(md[pk])})</td></tr><tr><td>Busiest year in the period</td><td><b>${py||"none"}</b>${py?" ("+fmt(an[py])+")":""}</td></tr>
+<tr><td>Risk this month</td><td>${r?`<b>${LV[r.l]}</b>, ${ord(Math.round(r.pr*100))} percentile for ${MN[FS%12]}`:"no forecast"}</td></tr>
+<tr><td>Forecast, next 3 months</td><td>${c.f?c.f.slice(0,3).map(fmt).join(", "):"none"}</td></tr>
+${SCP.run&&c.sd!=null?`<tr><td>Scenario, ${SCP.yr}</td><td><b>${sgn(c.sd)}</b> (${fmt(c.sB)} to ${fmt(c.sP)} a year)</td></tr>`:""}</table>
+${c.f?'<h2 style="margin:14px 0 6px">History and forecast</h2>'+fch(v,lc,c.f,md,440,150,60,true):""}
+${lv?`<h2 style="margin:14px 0 6px">Selected datasets for this cell</h2><table><tr><th>Dataset</th><th>Value</th><th>Rank among all cells</th></tr>${lv}</table>`:""}
+<p class="note">Harmonized counts for one 3\u00b0 cell, about 330 km wide at the equator. Individual satellite detections are not stored in this dataset. Solid: history. Dashed: forecast with 80% band. Dotted: usual.</p>
+<div class="row" style="justify-content:flex-start"><button class="p" id="cu">Use this cell as my area</button><button id="cq">Ask the analyst about it</button></div>`;
+$("cx").onclick=()=>{st.sel=-1;showCell();drawMap()};$("cu").onclick=()=>{$("pre").value="0";setB([c.lat-1.5,c.lat+1.5,c.lon-1.5,c.lon+1.5])};
+$("cq").onclick=()=>{tab("d");$("aiq").value="Analyze the point at "+cn(c)+": how active is it, how risky is it this month, and how does it compare with the rest of my selected area?";$("aiq").focus()};
+geo(c.lat,c.lon).then(n=>{const p=$("cp");if(p&&cells[st.sel]===c)p.textContent=n?"Near "+n:"Place name unavailable here"})}
+function legend(){const g=`linear-gradient(90deg,${RC})`,dv=`linear-gradient(90deg,${DV})`,x=st.vm=="x";$("fkl").hidden=st.vm!="f";$("fxl").hidden=!x;$("yrl").hidden=!(x&&SCP.run);
+if(x){const c=st.fx=="c";$("lgd").innerHTML=SCP.run?(c?`<span>Change vs the current path, ${SCP.yr}</span><i style="background:${dv}"></i><span>\u2212100% to +100%</span>`:`<span>${st.fx=="b"?"Current path":"Scenario"} per cell, ${SCP.yr}</span><i style="background:${g}"></i><span>low to high</span>`):"<span>Run a scenario in the Future tab first</span>";
+$("yrl").innerHTML=`<b style="font-size:28px;line-height:1">${SCP.yr}</b><span>${st.fx=="b"?"Current path":"Scenario: "+sgn((SCP.Ps/(SCP.Bs||1)-1)*100)+" in scope"}</span>`;return}
+if(!FC&&st.vm!="o"){$("lgd").innerHTML="<span>No forecast loaded</span>";return}
+const mo=mname(FS+st.fk-1);$("fkv").textContent="+"+st.fk+", "+mo;
+$("lgd").innerHTML=st.vm=="r"?"<span>Risk this month</span>"+LV.map((n,i)=>`<span style="display:flex;gap:5px;align-items:center"><i style="width:10px;height:10px;background:${RCOL[i]}"></i>${n}</span>`).join("")+"<span>against each cell\u2019s own history for the month</span>":st.vm=="f"?`<span>Forecast per cell, ${mo}</span><i style="background:${g}"></i><span>low to high</span>`:`<span>Mean hotspots per cell per month</span><i style="background:${g}"></i><span>low to high; column height follows the same scale</span>`}
+$("fk").oninput=()=>{st.fk=+$("fk").value;drawMap()};
+$("rs").onchange=e=>{st.rs=e.target.value;riskCalc();drawMap()};
+$("rkm").onchange=riskUI;
+$("rkl").onclick=e=>{const b=e.target.closest("button[data-r]");if(!b)return;const r=RKS[+b.dataset.r];$("pre").value="0";setB([r.b[0],r.b[1],r.b[2],r.b[3]])};
+(async()=>{try{const r=await fetch("pyroscale_forecast.json",{cache:"no-cache"});if(r.ok){FCfile=await r.json();attachFC(FCfile);update()}}catch(_){}})();
+let DLON=false,UID=0;st.fx="s";
+const SEL=new Set(["hm","fc","rk"]),PL0=null;
+const f2=v=>Number.isFinite(v)?(Math.abs(v)>=1000?fmt(v):String(+v.toPrecision(3))):"n/a";
+const cn=c=>Math.abs(c.lat).toFixed(1)+"\u00b0"+(c.lat<0?"S":"N")+", "+Math.abs(c.lon).toFixed(1)+"\u00b0"+(c.lon<0?"W":"E");
+const ord=n=>{const v=n%100;return n+(["th","st","nd","rd"][(v-20)%10]||["th","st","nd","rd"][v]||"th")};const sgn=v=>{const r=Math.round(v);return(r>0?"+":r<0?"\u2212":"")+Math.abs(r)+"%"};
+const HLF=(c,t)=>st.vm=="r"?!!(c.rk&&c.rk.l>=2):t>=.82;
+const scopeCells=()=>$("dlw").checked?(FOC?cells.filter(FOC):cells):cells.filter(c=>inb(c,st.b));
+function derive(){const lc=lcIdx(),yl=Math.floor((lc-11)/12);
+cells.forEach(c=>{const v=c.v;let s=0,sr=0;for(let i=0;i<=lc;i++){s+=v[i];sr+=real?c.r[i]:v[i]*(i<MOD?.27:1)}c.mu=s/(lc+1);c.mr=sr/(lc+1);
+c.md=MN.map((_,m)=>{const a=[];for(let i=m;i<=lc;i+=12)a.push(v[i]);a.sort((x,y)=>x-y);const n=a.length;return n?(a[(n-1)>>1]+a[n>>1])/2:0});
+const ya=[];for(let y=Math.max(0,yl-9);y<=yl;y++){let t=0;for(let m=0;m<12;m++)t+=v[y*12+m];ya.push(t)}
+const k=ya.length,my=ya.reduce((a,b)=>a+b,0)/(k||1),xm=(k-1)/2;let sx=0,sy=0;ya.forEach((t,j)=>{sx+=(j-xm)*(t-my);sy+=(j-xm)**2});
+c.tr=my&&sy?Math.max(-.03,Math.min(.03,sx/sy/my)):0;const l5=ya.slice(-5);c.b5=l5.reduce((a,b)=>a+b,0)/(l5.length||1);c.yl=yl;
+const m=c.md[lc%12];c.an=m?(v[lc]/m-1)*100:0;c.pkr=Math.max(...c.md)/((c.md.reduce((a,b)=>a+b,0)/12)||1)});const nw=Y0+Math.floor((lc+1)/12);$("l5").min=nw+1;if(+$("l5").value<nw+1)$("l5").value=nw+1;sRead()}
+const LY=[["hm","Hotspots, harmonized (mean per month)",c=>c.mu,"Hotspots"],["hr","Hotspots, raw sensor (mean per month)",c=>c.mr,"Hotspots"],
+["fc","Forecast, next 12 months (mean per month)",c=>c.f?c.f.slice(0,12).reduce((a,b)=>a+b,0)/12:NaN,"Forecast and risk"],["rk","Risk percentile this month (0 to 100)",c=>c.rk?c.rk.pr*100:NaN,"Forecast and risk"],
+["an","Latest full month vs usual (%)",c=>c.an,"Change"],["tr","Trend over the last 10 years (% per year)",c=>c.tr*100,"Change"],["se","Seasonality (peak month / average month)",c=>c.pkr,"Change"],
+["sd","Scenario change at the chosen year (%)",c=>c.sd==null?NaN:c.sd,"Scenario"],["la","Distance from the equator (degrees)",c=>Math.abs(c.lat),"Location"]];
+/* ---- tabs and drawer ---- */
+function tab(n){document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t==n));document.querySelectorAll(".tp").forEach(p=>p.hidden=p.dataset.t!=n);document.body.classList.remove("dc");$("dt").textContent="Hide panel";DLON=n=="d";PLON=n=="c";if(DLON)dlRun();if(PLON)placesUI();gResize()}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>tab(b.dataset.t));
+$("dt").onclick=()=>{const c=document.body.classList.toggle("dc");$("dt").textContent=c?"Show panel":"Hide panel";gResize()};
+if(innerWidth<=720){document.body.classList.add("dc");$("dt").textContent="Show panel"}
+/* ---- Data Lab ---- */
+const pc=(a,b)=>{let n=0,sx=0,sy=0;for(let i=0;i<a.length;i++)if(Number.isFinite(a[i])&&Number.isFinite(b[i])){n++;sx+=a[i];sy+=b[i]}if(n<8)return NaN;const mx=sx/n,my=sy/n;let u=0,p=0,q=0;for(let i=0;i<a.length;i++)if(Number.isFinite(a[i])&&Number.isFinite(b[i])){const x=a[i]-mx,y=b[i]-my;u+=x*y;p+=x*x;q+=y*y}return p&&q?u/Math.sqrt(p*q):NaN};
+function dlRender(){const g={};LY.forEach(l=>(g[l[3]]=g[l[3]]||[]).push(l));$("dll").innerHTML=Object.keys(g).map(k=>`<div class="lg2"><b>${k}</b>${g[k].map(l=>`<label class="ck"><input type="checkbox" data-l="${l[0]}"${SEL.has(l[0])?" checked":""}>${l[1]}</label>`).join("")}</div>`).join("");optsSel();if(DLON)dlRun()}
+function optsSel(){const ls=LY.filter(l=>SEL.has(l[0])),o=ls.map(l=>`<option value="${l[0]}">${l[1]}</option>`).join("");["dx1","dy1","dtp"].forEach((id,j)=>{const e=$(id),v=e.value;e.innerHTML=o;e.value=ls.some(l=>l[0]==v)?v:(ls[j==1?Math.min(1,ls.length-1):0]||[""])[0]})}
+function dlRun(){const cs=scopeCells(),ls=LY.filter(l=>SEL.has(l[0])),cols=ls.map(l=>cs.map(l[2]));
+if(!ls.length){$("dls").innerHTML='<p class="note">Select at least one dataset.</p>';$("dlc").innerHTML="";$("dsc").innerHTML="";$("dtl").innerHTML="";return}
+$("dls").innerHTML=`<p class="note">${cs.length} cells in ${$("dlw").checked?"the world":"your selected area"}, ${ls.length} dataset${ls.length>1?"s":""}.</p><div class="sc"><table><tr><th>Dataset</th><th>Cells</th><th>Mean</th><th>Median</th><th>Min</th><th>Max</th></tr>`+ls.map((l,i)=>{const a=cols[i].filter(Number.isFinite).sort((x,y)=>x-y),n=a.length,mu=a.reduce((s,x)=>s+x,0)/(n||1);return `<tr><td>${l[1]}</td><td>${n}</td><td>${f2(mu)}</td><td>${f2(n?(a[(n-1)>>1]+a[n>>1])/2:NaN)}</td><td>${f2(a[0])}</td><td>${f2(a[n-1])}</td></tr>`}).join("")+"</table></div>";
+const L=ls.slice(0,14);$("dlc").innerHTML=L.length<2?"":`<h2 style="margin-top:14px">Correlation between datasets</h2><div class="sc"><table><tr><th></th>${L.map((_,i)=>"<th>#"+(i+1)+"</th>").join("")}</tr>`+L.map((l,i)=>`<tr><td>#${i+1} ${l[1].slice(0,30)}</td>`+L.map((m,j)=>{const r=i==j?1:pc(cols[i],cols[j]);return `<td style="background:${Number.isFinite(r)?ramp(DV,.5+r/2):"transparent"};color:#16202c">${Number.isFinite(r)?r.toFixed(2):"n/a"}</td>`}).join("")+"</tr>").join("")+`</table></div><p class="note">Pearson correlation across cells. It does not show cause.${ls.length>14?" Showing the first 14 datasets.":""}</p>`;
+scat(cs);topc(cs)}
+function scat(cs){const la=LY.find(l=>l[0]==$("dx1").value),lb=LY.find(l=>l[0]==$("dy1").value),el=$("dsc");if(!la||!lb){el.innerHTML="";return}
+const P=[];cs.forEach(c=>{const x=la[2](c),y=lb[2](c);if(Number.isFinite(x)&&Number.isFinite(y))P.push([x,y])});if(P.length<3){el.innerHTML='<p class="note">Fewer than 3 cells have both datasets.</p>';return}
+const n=P.length,mx=P.reduce((s,p)=>s+p[0],0)/n,my=P.reduce((s,p)=>s+p[1],0)/n;let u=0,v=0,w=0;P.forEach(p=>{u+=(p[0]-mx)*(p[1]-my);v+=(p[0]-mx)**2;w+=(p[1]-my)**2});
+const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),x0=xs.reduce((a,b)=>Math.min(a,b)),x1=xs.reduce((a,b)=>Math.max(a,b)),y0=ys.reduce((a,b)=>Math.min(a,b)),y1=ys.reduce((a,b)=>Math.max(a,b)),W=440,H=230,l=44,b=26,
+X=x=>l+(x-x0)/((x1-x0)||1)*(W-l-8),Y=y=>H-b-(y-y0)/((y1-y0)||1)*(H-b-8),sd=Math.ceil(n/1500),sl=v?u/v:0,ic=my-sl*mx,r=v&&w?u/Math.sqrt(v*w):NaN;
+el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Scatter of ${la[1]} against ${lb[1]}"><line x1="${l}" x2="${W-8}" y1="${H-b}" y2="${H-b}" stroke="var(--ln)"/><line x1="${l}" x2="${l}" y1="8" y2="${H-b}" stroke="var(--ln)"/>`+P.filter((_,i)=>i%sd==0).map(p=>`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="2.4" fill="var(--ac)" opacity=".55"/>`).join("")+`<line x1="${X(x0)}" y1="${Y(ic+sl*x0)}" x2="${X(x1)}" y2="${Y(ic+sl*x1)}" stroke="var(--ink)" stroke-width="1.5"/><text x="${l}" y="${H-8}">${f2(x0)}</text><text x="${W-8}" y="${H-8}" text-anchor="end">${f2(x1)}</text><text x="${l-4}" y="${H-b}" text-anchor="end">${f2(y0)}</text><text x="${l-4}" y="14" text-anchor="end">${f2(y1)}</text></svg><p class="note">X: ${la[1]}. Y: ${lb[1]}. ${n} cells, r = ${Number.isFinite(r)?r.toFixed(2):"n/a"}.</p>`}
+function topc(cs){const l=LY.find(z=>z[0]==$("dtp").value);if(!l){$("dtl").innerHTML="";return}
+const T=cs.map(c=>[c,l[2](c)]).filter(p=>Number.isFinite(p[1])).sort((a,b)=>b[1]-a[1]).slice(0,8);
+$("dtl").innerHTML=T.map(p=>`<li><span>${cn(p[0])}<br><small>${f2(p[1])}</small></span><button data-k="${cells.indexOf(p[0])}">Open</button></li>`).join("")}
+const openCell=e=>{const b=e.target.closest("button[data-k]");if(!b)return;const k=+b.dataset.k;flyTo(cells[k].lat,cells[k].lon,1.7);selectCell(k)};
+$("dtl").onclick=openCell;$("sol").onclick=openCell;
+$("dll").onchange=e=>{const i=e.target;if(!i.dataset.l)return;i.checked?SEL.add(i.dataset.l):SEL.delete(i.dataset.l);optsSel();dlRun()};
+$("dx1").onchange=$("dy1").onchange=()=>scat(scopeCells());$("dtp").onchange=()=>topc(scopeCells());$("dlw").onchange=dlRun;
+$("dla").onclick=()=>{LY.forEach(l=>SEL.add(l[0]));dlRender()};$("dln").onclick=()=>{SEL.clear();dlRender()};
+$("dlf").onchange=async e=>{const bk=new Map();cells.forEach(c=>{const k=Math.floor(c.lat/3)+","+Math.floor(c.lon/3);(bk.get(k)||bk.set(k,[]).get(k)).push(c)});
+const find=(la,lo)=>{const a=Math.floor(la/3),b=Math.floor(lo/3);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const l=bk.get((a+i)+","+(b+j));if(l)for(const c of l)if(Math.abs(c.lat-la)<=1.5&&Math.abs(c.lon-lo)<1.5)return c}return null};const msg=[];
+for(const f of e.target.files){const rows=(await f.text()).split(/\r?\n/).filter(Boolean).map(r=>r.split(",").map(x=>x.trim())),h=rows.shift().map(x=>x.toLowerCase()),li=h.findIndex(x=>/^(lat|latitude)$/.test(x)),oi=h.findIndex(x=>/^(lon|lng|long|longitude)$/.test(x));
+if(li<0||oi<0){msg.push(f.name+": needs lat and lon columns");continue}
+h.forEach((name,j)=>{if(j==li||j==oi)return;const m=new Map();rows.forEach(r=>{const x=parseFloat(r[j]),la=parseFloat(r[li]),lo=parseFloat(r[oi]);if(!Number.isFinite(x)||!Number.isFinite(la)||!Number.isFinite(lo))return;const c=find(la,lo);if(!c)return;const a=m.get(c)||[0,0];a[0]+=x;a[1]++;m.set(c,a)});
+if(!m.size){msg.push(f.name+", "+name+": no rows fell on a cell with data");return}const id="u"+(++UID);cells.forEach(c=>{(c.u=c.u||{})[id]=NaN});m.forEach((a,c)=>{c.u[id]=a[0]/a[1]});
+LY.push([id,name+" ("+f.name+")",c=>c.u&&Number.isFinite(c.u[id])?c.u[id]:NaN,"Your datasets"]);SEL.add(id);msg.push(f.name+", "+name+": "+m.size+" cells")})}
+$("dlm").textContent=msg.join(". ");e.target.value="";dlRender()};
+/* ---- analyst (Claude when available, rules otherwise) ---- */
+let AIH=[],AIC=null;const SMP=(async()=>{try{return window.claude?await claude.use("sample"):null}catch(_){return null}})();
+SMP.then(s=>{$("aim").textContent=s?"Claude answers from a summary of the datasets you have selected and uses your own Claude usage. You will be asked once to allow it.":"Claude is not available here, so a built-in analyst answers from the data using rules. It can summarize, rank, correlate, and set up what-if scenarios."});
+$("aip").innerHTML=["Which areas face the highest fire risk and why?","What correlates most with hotspot activity here?","Summarize this area for an emergency manager","What if warming reaches 2 °C and burning is cut by 40% by 2040?"].map(t=>`<button>${t}</button>`).join("");
+const chatAdd=(r,t)=>{const d=document.createElement("div");d.className="m "+r;d.textContent=t;$("aic").appendChild(d);$("aic").scrollTop=1e9;return d};
+function aiCtx(){const cs=scopeCells(),ls=LY.filter(l=>SEL.has(l[0])).slice(0,14),cols=ls.map(l=>cs.map(l[2])),o=[];
+o.push("Scope: "+($("dlw").checked?"whole world":"area S,N,W,E = "+st.b.join(", "))+"; "+cs.length+" grid cells of 3 degrees; harmonized MODIS+VIIRS hotspot counts 2001 to "+mname(lcIdx())+"; data: "+(real?"real FIRMS-derived":"synthetic demonstration")+"; forecast: "+(FC?(FC.demo?"statistical baseline (not ML)":"LightGBM ML, origin "+FC.origin+(FC.skill?", hold-out error reduction vs seasonal median: 1 month "+Math.round(FC.skill[0]*100)+"%, 3 months "+Math.round(FC.skill[2]*100)+"%, 6 months "+Math.round(FC.skill[5]*100)+"%":"")):"none"));
+ls.forEach((l,i)=>{const a=cols[i].filter(Number.isFinite).sort((x,y)=>x-y),n=a.length;o.push(l[1]+": n="+n+", mean "+f2(a.reduce((s,x)=>s+x,0)/(n||1))+", median "+f2(a[n>>1])+", min "+f2(a[0])+", max "+f2(a[n-1]))});
+const pr=[];for(let i=0;i<ls.length;i++)for(let j=i+1;j<ls.length;j++){const r=pc(cols[i],cols[j]);if(Number.isFinite(r)&&Math.abs(r)<.995)pr.push([r,ls[i][1],ls[j][1]])}pr.sort((a,b)=>Math.abs(b[0])-Math.abs(a[0]));pr.slice(0,6).forEach(p=>o.push("Correlation "+p[0].toFixed(2)+": "+p[1]+" vs "+p[2]));
+ls.slice(0,3).forEach((l,i)=>{const t=cs.map((c,k)=>[c,cols[i][k]]).filter(p=>Number.isFinite(p[1])).sort((a,b)=>b[1]-a[1]).slice(0,5);o.push("Top cells by "+l[1]+": "+t.map(p=>cn(p[0])+" = "+f2(p[1])).join("; "))});
+o.push("Risk: "+$("rks").textContent);o.push("Outlook: "+$("ok").textContent);
+if(SCP.run)o.push("Scenario (illustrative sensitivity model): warming +"+SCP.t+" C, rainfall "+SCP.p+"%, human burning "+SCP.i+"%, fuel management "+SCP.f+"%, year "+SCP.y+", scope "+(SCP.w?"world":"selected area")+". Result: "+$("sot").textContent);
+return o.join("\n")}
+function promptLevers(q){const l=q.toLowerCase();if(!/(what if|scenario|simulat|suppose|if we|if the|assume|by 20[3-6]\d)/.test(l))return"";const got=[],set=(id,v)=>{$(id).value=v;$(id).dispatchEvent(new Event("input"))};let m;
+if(m=l.match(/([+-]?\d+(?:\.\d+)?)\s*(?:°|degrees?\s*)?c\b/)){set("l1",Math.max(0,Math.min(4,+m[1])));got.push("warming "+m[1]+" °C")}
+if(m=l.match(/(?:rain\w*|precip\w*)[^.\d+-]{0,25}([+-]?\d+)\s*%/)){let v=+m[1];if(!/[+-]/.test(m[1])&&/(less|drop|declin|decreas|drier|fall)/.test(l))v=-v;v=Math.max(-30,Math.min(30,v));set("l2",v);got.push("rainfall "+v+"%")}
+if(m=l.match(/(\d+)\s*%[^.]{0,30}(?:burn|ignition|fire start)|(?:burn\w*|ignition\w*)[^.\d]{0,30}(\d+)\s*%/)){let v=+(m[1]||m[2]);if(!/(more|increase|rise|expand)/.test(l))v=-v;v=Math.max(-80,Math.min(50,v));set("l3",v);got.push("burning "+(v>0?"+":"")+v+"%")}
+if(m=l.match(/(?:fuel|suppress\w*|prescribed|management)[^.\d]{0,30}(\d+)\s*%/)){set("l4",Math.max(0,Math.min(50,+m[1])));got.push("fuel management "+m[1]+"%")}
+if(m=l.match(/\b(20[3-6]\d)\b/)){set("l5",+m[1]);got.push("year "+m[1])}
+if(!got.length)return"";$("lsw").checked=!/(my area|this area|selected area)/.test(l)&&/(world|global|everywhere)/.test(l);$("lsw").dispatchEvent(new Event("input"));runScenario();return got.join(", ")}
+function local(q){const l=q.toLowerCase(),cs=scopeCells(),sc=$("dlw").checked?"the whole world":"your selected area";if(!cs.length)return"There are no data cells in "+sc+". Draw or choose an area that contains hotspots.";
+const top=(fn,k)=>cs.map(c=>[c,fn(c)]).filter(p=>Number.isFinite(p[1])).sort((a,b)=>b[1]-a[1]).slice(0,k||3);
+if(/(risk|danger|warn|alert|threat)/.test(l)){const h=cs.filter(c=>c.rk&&c.rk.l>=2);return $("rks").textContent+"\nIn "+sc+", "+h.length+" of "+cs.length+" cells are at high or extreme risk. Highest forecast activity among them: "+(top(c=>c.rk&&c.rk.l>=2?c.rk.v:NaN).map(p=>cn(p[0])+" ("+fmt(p[1])+" hotspots, "+LV[p[0].rk.l]+")").join("; ")||"none")+". Risk compares the forecast with each cell\u2019s own history for this month. It is statistical and does not include live weather."}
+if(/(correl|driver|relat|explain|why|depend)/.test(l)){const ls=LY.filter(z=>SEL.has(z[0])),pr=[];for(let i=0;i<ls.length;i++)for(let j=i+1;j<ls.length;j++){const r=pc(cs.map(ls[i][2]),cs.map(ls[j][2]));if(Number.isFinite(r)&&Math.abs(r)<.995)pr.push([r,ls[i][1],ls[j][1]])}pr.sort((a,b)=>Math.abs(b[0])-Math.abs(a[0]));return pr.length?"Strongest relationships across cells in "+sc+":\n"+pr.slice(0,5).map(p=>"\u2022 "+p[1]+" and "+p[2]+": r = "+p[0].toFixed(2)).join("\n")+"\nCorrelation does not show cause. Tick more datasets in the Data Lab to widen the search.":"Tick at least two datasets with enough overlapping cells to compare."}
+if(/(forecast|predict|next|coming|outlook)/.test(l))return $("ok").textContent||"No forecast is loaded.";
+if(/(season|peak|when|month)/.test(l)){const m=med.indexOf(Math.max(...med));return "In "+sc+" the usual peak month is "+MN[m]+" with about "+fmt(med[m])+" hotspots, and the quietest is "+MN[med.indexOf(Math.min(...med))]+"."}
+if(/(trend|increas|decreas|grow|declin)/.test(l)){const t=cs.map(c=>c.tr*100).sort((a,b)=>a-b);return "Over the last 10 full years the median cell in "+sc+" changed by "+f2(t[t.length>>1])+"% a year, and "+Math.round(t.filter(x=>x>0).length/t.length*100)+"% of cells are trending up."}
+if(SCP.run&&/(scenario|future|result)/.test(l))return $("sot").textContent;
+const t=top(c=>c.mu);return "Summary for "+sc+": "+cs.length+" cells averaging "+fmt(cs.reduce((s,c)=>s+c.mu,0))+" hotspots a month in total. Busiest cells: "+t.map(p=>cn(p[0])+" ("+fmt(p[1])+")").join("; ")+". "+$("rks").textContent+" Ask about risk, correlations, the forecast, seasons, trends, or a scenario such as \u201cwhat if warming is 2 \u00b0C and burning is cut 40% by 2040\u201d."}
+async function ask(q){q=q.trim();if(!q)return;$("aiq").value="";chatAdd("u",q);const b=chatAdd("a","Thinking..."),lev=promptLevers(q),S=await SMP;let out;
+if(S){AIC=new AbortController();$("aix").hidden=false;try{const inp=[...AIH.slice(-6),{role:"user",content:"You are the data analyst built into PyroScale-AI, a wildfire hotspot app. Answer the question using only the data summary below. Quote numbers from it, say what the data cannot show, never invent figures, and remember that scenarios are an illustrative sensitivity model, not a forecast. Keep it under 220 words.\n\nDATA SUMMARY\n"+aiCtx()+"\n\nQUESTION\n"+q}],r=await S(inp,{signal:AIC.signal,cache:false,modelTier:"default",onText:({text})=>{b.textContent=text}});out=r.text;AIH.push({role:"user",content:q},{role:"assistant",content:out})}
+catch(e){out=AIC.signal.aborted?(b.textContent.replace("Thinking...","")+"\n[stopped]"):(e&&e.code=="not_granted"?"Claude access was declined here, so the built-in analyst answered.\n\n":"Claude could not answer ("+((e&&e.code)||"error")+"). Built-in analyst:\n\n")+local(q)}$("aix").hidden=true}
+else out=local(q);
+b.textContent=out+(lev?"\n\nI set the scenario levers from your request ("+lev+") and ran it. Open the Future tab to see the Earth in that future.":"");$("aic").scrollTop=1e9}
+$("ais").onclick=()=>ask($("aiq").value);$("aiq").onkeydown=e=>{if(e.key=="Enter"&&!e.shiftKey){e.preventDefault();ask($("aiq").value)}};$("aix").onclick=()=>AIC&&AIC.abort();
+$("aip").onclick=e=>{const b=e.target.closest("button");if(b)ask(b.textContent)};
+/* ---- scenario lab ---- */
+const SCP={t:0,p:0,i:0,f:0,y:2040,w:0,kt:15,kp:8,run:0,ph:1,yr:0,heat:0,B:0,P:0,Bs:0,Ps:0};
+const LVL=[["l1","t","v1",v=>"+"+v+" \u00b0C"],["l2","p","v2",v=>(v>0?"+":v<0?"\u2212":"")+Math.abs(v)+"%"],["l3","i","v3",v=>(v>0?"+":v<0?"\u2212":"")+Math.abs(v)+"%"],["l4","f","v4",v=>v+"%"],["l5","y","v5",v=>v]];
+function sRead(){LVL.forEach(([id,k,lb,fm])=>{SCP[k]=+$(id).value;$(lb).textContent=fm(SCP[k])});SCP.kt=+$("a1").value||0;SCP.kp=+$("a2").value||0;SCP.w=$("lsw").checked?1:0}
+[...LVL.map(l=>l[0]),"a1","a2","lsw"].forEach(id=>$(id).oninput=sRead);
+const SKW=k=>FC&&FC.skill?Math.max(0,Math.min(1,FC.skill[k]/Math.max(FC.skill[0],.05))):1;
+function baseYear(c,yr){const tb=Math.max(0,c.b5*(1+c.tr*(yr-(Y0+c.yl-2)))),sh=c.md.reduce((a,b)=>a+b,0)||1,lc=lcIdx();let t=0;
+for(let m=0;m<12;m++){const i=(yr-Y0)*12+m,k=i-FS,cb=tb*c.md[m]/sh;if(i<=lc)t+=c.v[i];else if(c.f&&k>=0&&k<FH){const w=SKW(k);t+=w*c.f[k]+(1-w)*cb}else t+=cb}return t}
+function baseNote(){if(!FC||FC.demo)return"The current path uses each cell\u2019s recent level and 10-year trend with a statistical near-term adjustment, because no machine-learning forecast is loaded.";
+const z=FC.skill?FC.skill.findIndex(v=>v<=0):-1,n=z<0?FH:Math.max(z,1);return"The current path uses the machine-learning forecast for the next "+FH+" months, weighted by its backtested skill, which "+(z<0?"holds through the whole window":"fades to nothing after about "+n+" month"+(n>1?"s":""))+", then each cell\u2019s recent level and 10-year trend."}
+function sc1(c,ph){const L=SCP,now=Y0+Math.floor((lcIdx()+1)/12),yr=Math.round(now+ph*(L.y-now)),p=L.y>now?(yr-now)/(L.y-now):1,B=baseYear(c,yr),s=(L.w&&(!FOC||FOC(c)))||inb(c,st.b),
+M=s?Math.pow(1+L.kt/100,L.t*p)*Math.pow(1+L.kp/100,-L.p/10*p)*Math.max(0,1+L.i/100*p)*(1-L.f/100*p):1;return[B,B*M,!!s]}
+function sApply(ph){SCP.ph=ph;const now=Y0+Math.floor((lcIdx()+1)/12);SCP.yr=Math.round(now+ph*(SCP.y-now));let B=0,P=0,Bs=0,Ps=0;
+cells.forEach(c=>{const[b,p,s]=sc1(c,ph);c.sB=b;c.sP=p;c.sS=s;c.sd=b>0?(p/b-1)*100:0;B+=b;P+=p;if(s){Bs+=b;Ps+=p}});
+SCP.B=B;SCP.P=P;SCP.Bs=Bs;SCP.Ps=Ps;SCP.heat=Math.max(-.6,Math.min(1,(B?P/B-1:0)*2.5))}
+function sUI(){const pct=(a,b)=>b?(a/b-1)*100:0;
+$("sot").textContent=`In ${SCP.yr}, ${SCP.w?(FOC?"in your selected places":"worldwide"):"in your selected area"}, the scenario gives about ${fmt(SCP.Ps)} hotspots a year against ${fmt(SCP.Bs)} on the current path (${sgn(pct(SCP.Ps,SCP.Bs))}). Across the whole globe the change is ${sgn(pct(SCP.P,SCP.B))}. Levers: warming +${SCP.t} \u00b0C, rainfall ${sgn(SCP.p)}, human burning ${sgn(SCP.i)}, fuel management ${SCP.f}%, horizon ${SCP.y}. ${baseNote()}`;$("syl").textContent=SCP.yr;
+const pts=[...Array(9)].map((_,i)=>{let b=0,p=0;cells.forEach(c=>{const r=sc1(c,i/8);if(r[2]){b+=r[0];p+=r[1]}});return[b,p]}),mx=pts.reduce((a,p)=>Math.max(a,p[0],p[1]),1)*1.08,W=440,H=150,l=44,X=i=>l+i*(W-l-8)/8,Y=v=>H-22-v/mx*(H-30),now=Y0+Math.floor((lcIdx()+1)/12);
+$("soc").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Hotspots a year, current path against scenario">`+[0,1,2,3].map(k=>`<line x1="${l}" x2="${W-8}" y1="${Y(mx*k/3.24)}" y2="${Y(mx*k/3.24)}" stroke="var(--ln)"/><text x="${l-5}" y="${Y(mx*k/3.24)+3}" text-anchor="end">${fmt(mx*k/3.24)}</text>`).join("")+
+`<polyline points="${pts.map((p,i)=>X(i)+","+Y(p[0])).join(" ")}" fill="none" stroke="var(--mut)" stroke-width="1.6" stroke-dasharray="5 3"/><polyline points="${pts.map((p,i)=>X(i)+","+Y(p[1])).join(" ")}" fill="none" stroke="var(--ac)" stroke-width="2.2"/><line x1="${X(SCP.ph*8)}" x2="${X(SCP.ph*8)}" y1="6" y2="${H-22}" stroke="var(--ink)" stroke-dasharray="2 3"/><text x="${l}" y="${H-6}">${now}</text><text x="${W-8}" y="${H-6}" text-anchor="end">${SCP.y}</text><text x="${W/2}" y="${H-6}" text-anchor="middle">dashed: current path, solid: scenario</text></svg>`;
+const T=cells.filter(c=>c.sS).map(c=>[c,c.sP-c.sB]).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,5);
+$("sol").innerHTML=T.map(p=>`<li><span>${cn(p[0])}<br><small>${sgn(p[0].sd)}, ${fmt(p[0].sB)} to ${fmt(p[0].sP)} a year</small></span><button data-k="${cells.indexOf(p[0])}">Open</button></li>`).join("")}
+function runScenario(){sRead();SCP.run=1;sApply(1);$("vmx").checked=true;st.vm="x";$("so").hidden=false;$("sy").value=100;sUI();update();dlRender();
+if(!SCP.w){const[s,n,w,e]=st.b;flyTo((s+n)/2,(w+e)/2,Math.min(4.2,Math.max(1.55,1.35+Math.max(n-s,(e-w)*.6)/45)))}}
+const scrub=()=>{if(!SCP.run)return;sApply(+$("sy").value/100);sUI();drawMap()};
+$("sr").onclick=()=>{tab("f");runScenario()};$("sy").oninput=scrub;
+let PLT=null;$("sp").onclick=()=>{if(PLT){clearInterval(PLT);PLT=null;$("sp").textContent="Play";return}let v=+$("sy").value>=100?0:+$("sy").value;$("sp").textContent="Pause";PLT=setInterval(()=>{v+=1.2;if(v>=100){v=100;clearInterval(PLT);PLT=null;$("sp").textContent="Play"}$("sy").value=v;scrub()},60)};
+$("sx").onclick=()=>{["l1","l2","l3","l4"].forEach(id=>$(id).value=0);$("l5").value=2040;$("a1").value=15;$("a2").value=8;$("lsw").checked=false;sRead();SCP.run=0;SCP.heat=0;$("so").hidden=true;
+if(st.vm=="x"){st.vm="o";document.querySelector('input[name=vm][value=o]').checked=true}cells.forEach(c=>{c.sB=c.sP=c.sd=null});update();dlRender()};
+sRead();dlRender();
+$("vmx").addEventListener("change",()=>{if(!SCP.run){tab("f");runScenario()}});
+
+/* ---- countries and cities ---- */
+const CN={"AD":"Andorra","AE":"United Arab Emirates","AF":"Afghanistan","AG":"Antigua & Barbuda","AI":"Anguilla","AL":"Albania","AM":"Armenia","AO":"Angola","AQ":"Antarctica","AR":"Argentina","AS":"American Samoa","AT":"Austria","AU":"Australia","AW":"Aruba","AX":"Åland Islands","AZ":"Azerbaijan","BA":"Bosnia & Herzegovina","BB":"Barbados","BD":"Bangladesh","BE":"Belgium","BF":"Burkina Faso","BG":"Bulgaria","BH":"Bahrain","BI":"Burundi","BJ":"Benin","BL":"St. Barthélemy","BM":"Bermuda","BN":"Brunei","BO":"Bolivia","BQ":"Caribbean Netherlands","BR":"Brazil","BS":"Bahamas","BT":"Bhutan","BV":"Bouvet Island","BW":"Botswana","BY":"Belarus","BZ":"Belize","CA":"Canada","CC":"Cocos (Keeling) Islands","CD":"Congo - Kinshasa","CF":"Central African Republic","CG":"Congo - Brazzaville","CH":"Switzerland","CI":"Côte d’Ivoire","CK":"Cook Islands","CL":"Chile","CM":"Cameroon","CN":"China","CO":"Colombia","CQ":"Sark","CR":"Costa Rica","CU":"Cuba","CV":"Cape Verde","CW":"Curaçao","CX":"Christmas Island","CY":"Cyprus","CZ":"Czechia","DE":"Germany","DJ":"Djibouti","DK":"Denmark","DM":"Dominica","DO":"Dominican Republic","DZ":"Algeria","EC":"Ecuador","EE":"Estonia","EG":"Egypt","EH":"Western Sahara","ER":"Eritrea","ES":"Spain","ET":"Ethiopia","FI":"Finland","FJ":"Fiji","FK":"Falkland Islands","FM":"Micronesia","FO":"Faroe Islands","FR":"France","GA":"Gabon","GB":"United Kingdom","GD":"Grenada","GE":"Georgia","GF":"French Guiana","GG":"Guernsey","GH":"Ghana","GI":"Gibraltar","GL":"Greenland","GM":"Gambia","GN":"Guinea","GP":"Guadeloupe","GQ":"Equatorial Guinea","GR":"Greece","GS":"South Georgia & South Sandwich Islands","GT":"Guatemala","GU":"Guam","GW":"Guinea-Bissau","GY":"Guyana","HK":"Hong Kong SAR China","HM":"Heard & McDonald Islands","HN":"Honduras","HR":"Croatia","HT":"Haiti","HU":"Hungary","ID":"Indonesia","IE":"Ireland","IL":"Israel","IM":"Isle of Man","IN":"India","IO":"British Indian Ocean Territory","IQ":"Iraq","IR":"Iran","IS":"Iceland","IT":"Italy","JE":"Jersey","JM":"Jamaica","JO":"Jordan","JP":"Japan","KE":"Kenya","KG":"Kyrgyzstan","KH":"Cambodia","KI":"Kiribati","KM":"Comoros","KN":"St. Kitts & Nevis","KP":"North Korea","KR":"South Korea","KW":"Kuwait","KY":"Cayman Islands","KZ":"Kazakhstan","LA":"Laos","LB":"Lebanon","LC":"St. Lucia","LI":"Liechtenstein","LK":"Sri Lanka","LR":"Liberia","LS":"Lesotho","LT":"Lithuania","LU":"Luxembourg","LV":"Latvia","LY":"Libya","MA":"Morocco","MC":"Monaco","MD":"Moldova","ME":"Montenegro","MF":"St. Martin","MG":"Madagascar","MH":"Marshall Islands","MK":"North Macedonia","ML":"Mali","MM":"Myanmar (Burma)","MN":"Mongolia","MO":"Macao SAR China","MP":"Northern Mariana Islands","MQ":"Martinique","MR":"Mauritania","MS":"Montserrat","MT":"Malta","MU":"Mauritius","MV":"Maldives","MW":"Malawi","MX":"Mexico","MY":"Malaysia","MZ":"Mozambique","NA":"Namibia","NC":"New Caledonia","NE":"Niger","NF":"Norfolk Island","NG":"Nigeria","NI":"Nicaragua","NL":"Netherlands","NO":"Norway","NP":"Nepal","NR":"Nauru","NU":"Niue","NZ":"New Zealand","OM":"Oman","PA":"Panama","PE":"Peru","PF":"French Polynesia","PG":"Papua New Guinea","PH":"Philippines","PK":"Pakistan","PL":"Poland","PM":"St. Pierre & Miquelon","PN":"Pitcairn Islands","PR":"Puerto Rico","PS":"Palestinian Territories","PT":"Portugal","PW":"Palau","PY":"Paraguay","QA":"Qatar","RE":"Réunion","RO":"Romania","RS":"Serbia","RU":"Russia","RW":"Rwanda","SA":"Saudi Arabia","SB":"Solomon Islands","SC":"Seychelles","SD":"Sudan","SE":"Sweden","SG":"Singapore","SH":"St. Helena","SI":"Slovenia","SJ":"Svalbard & Jan Mayen","SK":"Slovakia","SL":"Sierra Leone","SM":"San Marino","SN":"Senegal","SO":"Somalia","SR":"Suriname","SS":"South Sudan","ST":"São Tomé & Príncipe","SV":"El Salvador","SX":"Sint Maarten","SY":"Syria","SZ":"Eswatini","TC":"Turks & Caicos Islands","TD":"Chad","TF":"French Southern Territories","TG":"Togo","TH":"Thailand","TJ":"Tajikistan","TK":"Tokelau","TL":"Timor-Leste","TM":"Turkmenistan","TN":"Tunisia","TO":"Tonga","TR":"Türkiye","TT":"Trinidad & Tobago","TV":"Tuvalu","TW":"Taiwan","TZ":"Tanzania","UA":"Ukraine","UG":"Uganda","UM":"U.S. Outlying Islands","US":"United States","UY":"Uruguay","UZ":"Uzbekistan","VA":"Vatican City","VC":"St. Vincent & Grenadines","VE":"Venezuela","VG":"British Virgin Islands","VI":"U.S. Virgin Islands","VN":"Vietnam","VU":"Vanuatu","WF":"Wallis & Futuna","WS":"Samoa","XK":"Kosovo","YE":"Yemen","YT":"Mayotte","ZA":"South Africa","ZM":"Zambia","ZW":"Zimbabwe"},AL={US:"usa america united states of america",GB:"uk britain england scotland wales great britain",RU:"russian federation",CZ:"czech republic",TR:"turkey turkiye",CI:"ivory coast",MM:"burma",SZ:"swaziland",KR:"south korea korea",KP:"north korea korea",CD:"drc democratic republic of the congo",CG:"republic of the congo",HK:"hong kong",PS:"palestine gaza west bank",MK:"macedonia",CV:"cape verde",TL:"east timor",VA:"vatican",LA:"laos",VN:"viet nam",SY:"syria",IR:"persia",BO:"bolivia",VE:"venezuela",TZ:"tanzania",MD:"moldova",BN:"brunei",AE:"uae emirates",NL:"holland"};
+const CNL=Object.keys(CN).map(k=>[k,CN[k],(CN[k]+" "+k+" "+(AL[k]||"")).toLowerCase()]);
+let ITEMS=[],PLACES=null,PLN=null,PLON=false,RADV=250,SR=[],PQT=null;const CCB=new Map();
+const esc=t=>String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const hav=(a,b,c,d)=>{const r=Math.PI/180,x=Math.sin((c-a)*r/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin((d-b)*r/2)**2;return 12742*Math.asin(Math.sqrt(x))};
+function bestOf(code){let b=null,m=0;cells.forEach(c=>{const s=c.cc&&c.cc[code]||0;if(s>m){m=s;b=c}});CCB.set(code,b);return b}
+const cellW=(c,it)=>it.t=="c"?(c.cc&&c.cc[it.code]||0):((Math.abs(c.lat-it.lat)<=1.5&&Math.abs(c.lon-it.lon)<=1.5)||(RADV>0&&hav(c.lat,c.lon,it.lat,it.lon)<=RADV)?1:0);
+function setFocus(){FOC=ITEMS.length?(c=>ITEMS.some(it=>it.t=="c"?!!(c.cc&&(c.cc[it.code]>=.25||(CCB.has(it.code)?CCB.get(it.code):bestOf(it.code))===c)):cellW(c,it)>0)):null}
+function itemCenter(it){if(it.t=="p")return[it.lat,it.lon];let sx=0,sy=0,sw=0;cells.forEach(c=>{const w=c.cc&&c.cc[it.code]||0;sx+=w*c.lat;sy+=w*c.lon;sw+=w});return sw?[sx/sw,sy/sw]:null}
+function placesLocal(q){const a=[],b=[];for(let i=0;i<PLN.length&&a.length<8;i++){const n=PLN[i];if(n.startsWith(q))a.push(i);else if(b.length<8&&n.includes(q))b.push(i)}
+return a.concat(b).slice(0,8).map(i=>{const p=PLACES[i];return{t:"p",id:"p"+i,name:p[0]+(p[1]?", "+p[1]:"")+", "+(CN[p[2]]||p[2]),lat:p[3],lon:p[4]}})}
+async function placesApi(q){const r=await fetch("https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=8&language=en&format=json");if(!r.ok)throw 0;const j=await r.json();
+return(j.results||[]).map(p=>({t:"p",id:"p"+p.id,name:p.name+(p.admin1?", "+p.admin1:"")+", "+(p.country||p.country_code),lat:p.latitude,lon:p.longitude}))}
+async function doSearch(){const q=$("pq").value.trim().toLowerCase(),ul=$("pr");if(!q){ul.innerHTML="";SR=[];return}
+const cs=CNL.filter(c=>c[2].includes(q)).sort((a,b)=>(+b[1].toLowerCase().startsWith(q))-(+a[1].toLowerCase().startsWith(q))||a[1].localeCompare(b[1])).slice(0,8).map(c=>({t:"c",id:"c"+c[0],code:c[0],name:c[1]}));
+let pl=[];if(q.length>=2){if(PLACES)pl=placesLocal(q);else{try{pl=await placesApi(q)}catch(_){$("pfm").textContent="City search needs the city list file below, or internet access to Open-Meteo, which this preview does not have."}}}
+if($("pq").value.trim().toLowerCase()!=q)return;SR=cs.concat(pl);
+ul.innerHTML=SR.map((r,j)=>`<li data-j="${j}"><b>${esc(r.name)}</b><small>${r.t=="c"?"Country":"City"}</small></li>`).join("")||"<li>No match</li>"}
+function setPlaces(a){if(!Array.isArray(a)||!Array.isArray(a[0])||a[0].length<5)throw 0;PLACES=a;PLN=a.map(p=>String(p[0]).toLowerCase());$("pfm").textContent=a.length.toLocaleString()+" places loaded, so city search works offline."}
+function addItem(it){if(ITEMS.some(x=>x.id==it.id))return;ITEMS.push(it);applyFocus(true)}
+function clearFocus(){ITEMS=[];applyFocus(false)}
+function applyFocus(fly){setFocus();riskCalc();$("fcl").hidden=!ITEMS.length;$("fcl").innerHTML="Showing only: <b>"+ITEMS.map(i=>esc(i.name)).join(", ")+'</b><button id="fcc">Clear</button>';
+const cs=FOC?cells.filter(FOC):[];
+if(cs.length&&fly){const la=cs.map(c=>c.lat),lo=cs.map(c=>c.lon),b=[Math.min(...la)-1.5,Math.max(...la)+1.5,Math.min(...lo)-1.5,Math.max(...lo)+1.5];$("pre").value="0";noFly=true;setB(b);noFly=false;
+const w=b[3]-b[2];if(w>120){const ct=itemCenter(ITEMS[0]);if(ct)flyTo(ct[0],ct[1],3.4)}else flyTo((b[0]+b[1])/2,(b[2]+b[3])/2,Math.min(4.2,Math.max(1.55,1.35+Math.max(b[1]-b[0],w*.6)/45)))}else update();
+placesUI()}
+function itemStats(it,lc,wd){const S=new Float64Array(NY*12),F=Array(FH).fill(0);let n=0,hi=0,Bs=0,Ps=0,hf=0;
+cells.forEach(c=>{const w=cellW(c,it);if(w<=0)return;n++;for(let i=0;i<=lc;i++)S[i]+=w*c.v[i];if(c.f){hf=1;c.f.forEach((v,k)=>{F[k]+=w*v})}if(c.rk&&c.rk.l>=2&&w>=.25)hi++;if(SCP.run&&c.sB!=null){Bs+=w*c.sB;Ps+=w*c.sP}});
+let tot=0;for(let i=st.f;i<=Math.min(st.t,lc);i++)tot+=S[i];
+const md=MN.map((_,m)=>med1(Array.from({length:NY},(_,y)=>y*12+m<=lc?S[y*12+m]:NaN))),pk=md.indexOf(Math.max(...md));
+return{it,n,hi,tot,sh:wd?tot/wd*100:0,an:md[lc%12]?(S[lc]/md[lc%12]-1)*100:null,pk,mpk:md[pk],f3:hf?F[0]+F[1]+F[2]:null,sd:SCP.run&&Bs?(Ps/Bs-1)*100:null,S,F:hf?F.map(Math.round):null,md}}
+function placesUI(){$("pch").innerHTML=ITEMS.map((it,i)=>`<button class="chip" data-i="${i}" aria-label="Remove ${esc(it.name)}">${esc(it.name)} \u00d7</button>`).join("");
+const nocc=ITEMS.some(i=>i.t=="c")&&!cells.some(c=>c.cc),none=FOC&&!cells.some(FOC);
+$("pnt").textContent=nocc?"This dataset has no country information yet, so countries cannot be matched to cells. Run add_places.py on pyroscale_data.json, then load the file again. Cities work without it.":none?"No hotspot cells overlap your selection in this dataset. The grid is about 330 km wide, so very small places map to their nearest cell only when it has data.":"";
+if(!PLON)return;const lc=lcIdx();let wd=0;cells.forEach(c=>{for(let i=st.f;i<=Math.min(st.t,lc);i++)wd+=c.v[i]});
+const R=ITEMS.slice(0,8).map(it=>itemStats(it,lc,wd));
+const cmp=R.length>1?`<div class="pn"><h2>Comparison</h2><div class="sc"><table><tr><th>Place</th><th>Cells</th><th>Hotspots</th><th>Last month</th><th>Next 3 months</th><th>High-risk cells</th></tr>`+R.map(r=>`<tr><td>${esc(r.it.name)}</td><td>${r.n}</td><td>${fmt(r.tot)}</td><td>${r.an==null?"n/a":sgn(r.an)}</td><td>${r.f3==null?"n/a":fmt(r.f3)}</td><td>${r.hi}</td></tr>`).join("")+"</table></div></div>":"";
+$("pcards").innerHTML=cmp+R.map(r=>`<div class="pn"><h2>${esc(r.it.name)}</h2><p class="note" style="margin-top:0">${r.n} grid cell${r.n==1?"":"s"}${r.it.t=="c"?"; a cell shared with a neighbouring country counts by its share":", "+(RADV>0?"within "+RADV+" km of the city":"the cell containing the city")}.</p>
+<table><tr><td>Hotspots in the chosen period</td><td><b>${fmt(r.tot)}</b> (${r.sh.toFixed(1)}% of the dataset)</td></tr><tr><td>Last full month</td><td>${r.an==null?"n/a":sgn(r.an)+" vs usual"}</td></tr><tr><td>Usual peak month</td><td><b>${MN[r.pk]}</b> (${fmt(r.mpk)})</td></tr><tr><td>Forecast, next 3 months</td><td>${r.f3==null?"none":fmt(r.f3)}</td></tr><tr><td>Cells at high or extreme risk</td><td>${r.hi} of ${r.n}</td></tr>${r.sd==null?"":`<tr><td>Scenario, ${SCP.yr}</td><td><b>${sgn(r.sd)}</b></td></tr>`}</table>
+${r.F?'<h2 style="margin:14px 0 6px">History and forecast</h2>'+fch(r.S,lc,r.F,r.md,440,150,60,true):""}
+<div class="row" style="justify-content:flex-start;margin-top:8px"><button data-f="${ITEMS.indexOf(r.it)}">Show on globe</button></div></div>`).join("")+(ITEMS.length>8?'<p class="note">Showing the first 8 selections.</p>':"")}
+$("pq").oninput=()=>{clearTimeout(PQT);PQT=setTimeout(doSearch,PLACES?60:300)};
+$("pr").onclick=e=>{const li=e.target.closest("li[data-j]");if(!li)return;const it=SR[+li.dataset.j];$("pq").value="";$("pr").innerHTML="";addItem(it)};
+$("pch").onclick=e=>{const b=e.target.closest("button[data-i]");if(!b)return;ITEMS.splice(+b.dataset.i,1);applyFocus(ITEMS.length>0)};
+$("pcl").onclick=clearFocus;$("fcl").onclick=e=>{if(e.target.id=="fcc")clearFocus()};
+$("prr").onchange=()=>{RADV=+$("prr").value;if(ITEMS.length)applyFocus(true)};
+$("pcards").onclick=e=>{const b=e.target.closest("button[data-f]");if(!b)return;const c=itemCenter(ITEMS[+b.dataset.f]);if(c)flyTo(c[0],c[1],2.2)};
+$("pfl").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const t=await f.text();setPlaces(JSON.parse(t));idb("put",t,"p")}catch(_){$("pfm").textContent="That file is not a city list from add_places.py."}e.target.value=""};
+(async()=>{try{const r=await fetch("pyroscale_places.json");if(r.ok)setPlaces(await r.json())}catch(_){}if(!PLACES){try{const c=await idb("get",0,"p");if(c)setPlaces(JSON.parse(c))}catch(_){}}})();
+
+attachFC(demoFC());setB(st.b);
+</script></body></html>
